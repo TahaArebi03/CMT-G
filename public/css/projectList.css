@@ -1,0 +1,72 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+  }
+  
+  .container {
+    background: white;
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  h1 {
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .project-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .project-list li {
+    background: #e9ecef;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 6px;
+  }
+  
+  .project-list li h3 {
+    margin: 0 0 5px;
+  }
+  
+  .project-list li p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .project-list li a {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  
+  .project-list li a:hover {
+    background: #0056b3;
+  }
+  
+  .add-btn {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-btn:hover {
+    background-color: #218838;
+  }
+  
