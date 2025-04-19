@@ -1,7 +1,7 @@
 <?php
 // File: /app/Components/UserManagement/Controllers/UserController.php
 
-require_once '../../../config/config.php';
+require_once '../../../../config/config.php';
 require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/../Models/StudentUser.php';
 require_once __DIR__ . '/../Models/AdminUser.php';
@@ -56,8 +56,10 @@ class UserController
             // Instantiate and populate User
             $user = new User();
             $user->setName($name);
-            $user->setEmail($email);
-            $user->password = $password;         // plaintext; save() will hash
+            $user->setEmail($email);  
+            $user->setPassword($password);
+            
+      // plaintext; save() will hash
             $user->setRole('Student');
             // defaults: language = 'en', focus_mode = false
 

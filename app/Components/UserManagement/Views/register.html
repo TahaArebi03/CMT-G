@@ -10,10 +10,10 @@
   <div class="register-container">
     <h2>Create Account</h2>
     <p>Join us by filling the information below</p>
-    <form>
-      <input type="text" placeholder="Full Name" required>
-      <input type="email" placeholder="Email Address" required>
-      <input type="password" placeholder="Password" required>
+    <form method = "POST" action="../Controllers/UserController.php?action=register">
+      <input type="text" name="name" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email Address" required>
+      <input type="password" name="password" placeholder="Password" required>
       <input type="password" placeholder="Confirm Password" required>
       <button type="submit">Register</button>
       <div class="login-link">

@@ -1,95 +1,92 @@
 <?php
-// File: /app/Components/UserManagement/Models/User.php
-require_once '../../../config/config.php';
+require_once __DIR__ . '/../../../../config/config.php';
 
 class User {
     private $userId;
     private $name;
     private $email;
-    private $password;    // مخزَّنة مشفّرة
+    private $password;    // ستحتوي دائماً على النص المُشفر
     private $role;
     private $language;
     private $focus_mode;  // boolean
 
     public function __construct() {
-        // فارغ: البيانات تُحمّل عبر setters أو من findBy…
+        // تظل البيانات فارغة إلى أن تُحمَّل من DB أو يضبطها setter
     }
 
     // ——— Getters & Setters ———
-    public function getUserId() { return $this->userId; }
-    public function getName()   { return $this->name; }
-    public function setName($n) { $this->name = $n; }
 
-    public function getEmail()       { return $this->email; }
-    public function setEmail($e)     { $this->email = $e; }
+    public function getUserId()   { return $this->userId; }
+    public function getName()     { return $this->name; }
+    public function setName($n)   { $this->name = $n; }
 
-    public function getRole()        { return $this->role; }
-    public function setRole($r)      { $this->role = $r; }
+    public function getEmail()    { return $this->email; }
+    public function setEmail($e)  { $this->email = $e; }
 
-    public function getLanguage()    { return $this->language; }
-    public function setLanguage($l)  { $this->language = $l; }
+    public function getRole()     { return $this->role; }
+    public function setRole($r)   { $this->role = $r; }
 
-    public function isFocusMode()    { return $this->focus_mode; }
-    public function setFocusMode($f){ $this->focus_mode = (bool)$f; }
+    public function getLanguage()      { return $this->language; }
+    public function setLanguage($l)    { $this->language = $l; }
+
+    public function isFocusMode()      { return $this->focus_mode; }
+    public function setFocusMode($f)   { $this->focus_mode = (bool)$f; }
 
     /**
-     * يحفظ (Insert or Update) المستخدم في قاعدة البيانات.
+     * يشفر كلمة المرور ويخزنها
      */
-    public function save() {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        if ($conn->connect_error) {
-            die("DB connection failed: " . $conn->connect_error);
-        }
-        // تشفير كلمة المرور إذا كانت مُعيّنة وغير مُشفّرة
-        if (!password_get_info($this->password)['algo']) {
-            $this->password = password_hash($this->password, PASSWORD_BCRYPT);
-        }
-
-        if ($this->userId) {
-            // Update existing
-            $stmt = $conn->prepare(
-              "UPDATE users SET name=?, email=?, password=?, role=?, language=?, focus_mode=? 
-               WHERE user_id=?"
-            );
-            $stmt->bind_param(
-              "ssssisi",
-              $this->name,
-              $this->email,
-              $this->password,
-              $this->role,
-              $this->language,
-              $this->focus_mode,
-              $this->userId
-            );
-        } else {
-            // Insert new
-            $stmt = $conn->prepare(
-              "INSERT INTO users (name,email,password,role,language,focus_mode)
-               VALUES (?,?,?,?,?,?)"
-            );
-            $stmt->bind_param(
-              "sssssi",
-              $this->name,
-              $this->email,
-              $this->password,
-              $this->role,
-              $this->language,
-              $this->focus_mode
-            );
-        }
-        $ok = $stmt->execute();
-        if (!$this->userId) {
-            $this->userId = $stmt->insert_id;
-        }
-        $stmt->close();
-        $conn->close();
-        return $ok;
+    public function setPassword(string $plainPassword): void {
+        $this->password = password_hash($plainPassword, PASSWORD_BCRYPT);
     }
 
     /**
-     * تسجيل الدخول: يتحقق من البريد وكلمة المرور.
+     * حفظ المستخدم (Insert أو Update)
      */
-    public static function login($email, $password) {
+    public function save(): bool {
+        $db  = new Connect();
+        $pdo = $db->conn;
+
+        if ($this->userId) {
+            // تحديث
+            $stmt = $pdo->prepare(
+              "UPDATE users
+               SET name = ?, email = ?, password = ?, role = ?, language = ?, focus_mode = ?
+               WHERE user_id = ?"
+            );
+            return $stmt->execute([
+                $this->name,
+                $this->email,
+                $this->password,
+                $this->role,
+                $this->language,
+                (int)$this->focus_mode,
+                $this->userId
+            ]);
+        } else {
+            // إدراج جديد
+            $stmt = $pdo->prepare(
+              "INSERT INTO users (name, email, password, role, language, focus_mode)
+               VALUES (?, ?, ?, ?, ?, ?)"
+            );
+            $ok = $stmt->execute([
+                $this->name,
+                $this->email,
+                $this->password,
+                $this->role,
+                $this->language,
+                (int)$this->focus_mode
+            ]);
+            if ($ok) {
+                $this->userId = $pdo->lastInsertId();
+            }
+            return $ok;
+        }
+    }
+
+    /**
+     * محاولة تسجيل الدخول
+     */
+    public static function login(string $email, string $password): ?User {
         $user = self::findByEmail($email);
         if ($user && password_verify($password, $user->password)) {
             return $user;
@@ -97,67 +94,45 @@ class User {
         return null;
     }
 
-    /**
-     * استرجاع مستخدم بناءً على البريد الإلكتروني.
-     */
-    public static function findByEmail($email) {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        if ($conn->connect_error) {
-            die("DB connection failed: " . $conn->connect_error);
-        }
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        if ($row = $res->fetch_assoc()) {
-            $u = new User();
-            $u->userId     = $row['user_id'];
-            $u->name       = $row['name'];
-            $u->email      = $row['email'];
-            $u->password   = $row['password'];
-            $u->role       = $row['role'];
-            $u->language   = $row['language'];
-            $u->focus_mode = (bool)$row['focus_mode'];
-            $stmt->close();
-            $conn->close();
-            return $u;
-        }
-        $stmt->close();
-        $conn->close();
-        return null;
+    public static function findByEmail(string $email): ?User {
+        $db  = new Connect();
+        $pdo = $db->conn;
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return null;
+
+        $u = new User();
+        $u->userId     = $row['user_id'];
+        $u->name       = $row['name'];
+        $u->email      = $row['email'];
+        $u->password   = $row['password'];
+        $u->role       = $row['role'];
+        $u->language   = $row['language'];
+        $u->focus_mode = (bool)$row['focus_mode'];
+        return $u;
     }
 
-    /**
-     * استرجاع مستخدم بناءً على المعرف.
-     */
-    public static function findById($id) {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        $stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        if ($row = $res->fetch_assoc()) {
-            $u = new User();
-            $u->userId     = $row['user_id'];
-            $u->name       = $row['name'];
-            $u->email      = $row['email'];
-            $u->password   = $row['password'];
-            $u->role       = $row['role'];
-            $u->language   = $row['language'];
-            $u->focus_mode = (bool)$row['focus_mode'];
-            $stmt->close();
-            $conn->close();
-            return $u;
-        }
-        $stmt->close();
-        $conn->close();
-        return null;
+    public static function findById(int $id): ?User {
+        $db  = new Connect();
+        $pdo = $db->conn;
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return null;
+
+        $u = new User();
+        $u->userId     = $row['user_id'];
+        $u->name       = $row['name'];
+        $u->email      = $row['email'];
+        $u->password   = $row['password'];
+        $u->role       = $row['role'];
+        $u->language   = $row['language'];
+        $u->focus_mode = (bool)$row['focus_mode'];
+        return $u;
     }
 
-    /**
-     * يعيد مصفوفة معلومات المستخدم.
-     */
-    public function getUserInfo() {
+    public function getUserInfo(): array {
         return [
             'userId'     => $this->userId,
             'name'       => $this->name,

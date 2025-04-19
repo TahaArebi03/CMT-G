@@ -3,22 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <title>Project Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../../../../public/css/projectForm.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Create / Edit Project</h1>
-    <form method="post" action="saveProject.php">
-      <label>Project Title</label>
-      <input type="text" name="title" required>
+  <div class="pf-container">
+    <h1>🛠 Create / Edit Project</h1>
+    <form action="projectList.html" method="post" class="pf-form">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" required>
 
-      <label>Description</label>
-      <textarea name="description" required></textarea>
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="4" required></textarea>
 
-      <label>Deadline</label>
-      <input type="date" name="deadline" required>
+      <label for="objectives">Objectives</label>
+      <textarea id="objectives" name="objectives" rows="3"></textarea>
 
-      <button type="submit">Save Project</button>
+      <label for="deadline">Deadline</label>
+      <input type="datetime-local" id="deadline" name="deadline" required>
+
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <option value="active">Active</option>
+        <option value="archived">Archived</option>
+      </select>
+
+      <button type="submit">Save</button>
     </form>
   </div>
 </body>
