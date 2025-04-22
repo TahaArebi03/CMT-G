@@ -84,7 +84,7 @@ class Project
     /**
      * أنشئ مشروعاً جديداً وارجع الكائن.
      */
-    public static function createProject(array $data): ?Project
+    public static function createProject(array $data): ? Project
     {
         $p = new Project();
         $p->setTitle($data['title'] ?? '');
@@ -141,7 +141,7 @@ class Project
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) return null;
-
+        // مفروض - set -بش - details - تكون - get
         $p = new Project();
         $p->project_id   = $row['project_id'];
         $p->title        = $row['title'];

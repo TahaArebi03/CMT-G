@@ -52,17 +52,24 @@ class UserController
             $name     = trim($_POST['name'] ?? '');
             $email    = trim($_POST['email'] ?? '');
             $password = trim($_POST['password'] ?? '');
-
+            $role = trim($_POST['role'] ?? '');
+            $language = trim($_POST['language'] ?? '');
+            var_dump($_POST);
             // Instantiate and populate User
             $user = new User();
             $user->setName($name);
             $user->setEmail($email);  
             $user->setPassword($password);
-            
+            $user->setRole($role);
+            $user->setLanguage($language);
+        
       // plaintext; save() will hash
-            $user->setRole('Student');
             // defaults: language = 'en', focus_mode = false
+            if($user->getRole()=='student'){
 
+                header('Location: ../Views/dashboard.php');
+
+            }
             if ($user->save()) {
                 $_SESSION['user_id'] = $user->getUserId();
                 $_SESSION['role']    = $user->getRole();
@@ -136,8 +143,9 @@ class UserController
 // Router-like dispatch (simple)
 $controller = new UserController();
 $action     = $_GET['action'] ?? 'login';
-
+var_dump($_GET);
 switch ($action) {
+    
     case 'login':
         $controller->loginAction();
         break;

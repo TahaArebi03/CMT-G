@@ -25,7 +25,7 @@ class ProjectController
         $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // عرض الـ view
-        include __DIR__ . '/../Views/projectList.html';
+        include __DIR__ . '/../Views/projectList.php';
     }
 
     /**
@@ -55,13 +55,14 @@ class ProjectController
      */
     public function viewAction()
     {
+        //id -> projectList.php
         $id = intval($_GET['id'] ?? 0);
         if (!$id) {
             header('Location: ProjectController.php?action=list');
             exit;
         }
         $project = Project::findById($id);
-        include __DIR__ . '/../Views/projectDetails.html';
+        include __DIR__ . '/../Views/projectDetails.php';
     }
 
     /**

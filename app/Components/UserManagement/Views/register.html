@@ -15,9 +15,21 @@
       <input type="email" name="email" placeholder="Email Address" required>
       <input type="password" name="password" placeholder="Password" required>
       <input type="password" placeholder="Confirm Password" required>
+      <div class="role-select">
+        <input type="radio" id="student" name="role" value="student" checked>
+        <label for="student">Student</label>
+        <input type="radio" id="team-leader" name="role" value="team-leader" checked>
+        <label for="team-leader">team-leader</label>
+      </div>
+      <div class="role-select">
+        <input type="radio" id="lang" name="language" value="ar" checked>
+        <label for="lang">Arabic</label>
+        <input type="radio" id="lang" name="language" value="en" checked>
+        <label for="lang">English</label>
+      </div>
       <button type="submit">Register</button>
       <div class="login-link">
-        Already have an account? <a href="#">Login here</a>
+        Already have an account? <a href="login.html">Login here</a>
       </div>
     </form>
   </div>
