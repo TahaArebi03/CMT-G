@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
     header("Location: ../Auth/inout.php");
     exit;
 }
-// Note line 34
+
 require_once '../Config/connect.php';
 
 $connection = new Connect();
