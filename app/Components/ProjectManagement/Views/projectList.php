@@ -1,25 +1,29 @@
+<?php
 
+$project= Project::findById($id);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Project List</title>
+  <title>My project</title>
   <link rel="stylesheet" href="../../../../public/css/projectList.css">
 </head>
 <body>
   <div class="container">
-    <h1>Project List</h1>
-    <a href="projectForm.html" class="add-btn">+ Add New Project</a>
+  <?php if (empty($project)): ?>
+      <p class="empty">You are not a member of any project yet.</p>
+      <a href="projectForm.html" class="add-btn">+ Add New Project</a>
+    <?php else: ?>
+    <h1>My project</h1>
     <ul class="pm-list">
-       // controller -> listAction
-      <?php foreach ($projects as $p): ?>
         <li class="pm-item">
-          <h2><?= htmlspecialchars($p['title']) ?></h2>
-          <a href="ProjectController.php?action=view&id=<?= $p['project_id'] ?>"
+          <h2><?= htmlspecialchars($project->getTitle()) ?></h2>
+          <a href="ProjectController.php?action=view&id=<?= $project->getId()?>" 
             class="btn view">View Details</a>
         </li>
-      <?php endforeach; ?>
 </ul>
+<?php endif; ?>
   </div>
 </body>
 </html>

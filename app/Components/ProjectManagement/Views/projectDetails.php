@@ -3,8 +3,7 @@ require_once __DIR__ . '../../../UserManagment/Models/User.php';
 // createdBy = user_id ->session
 // getName for created project
 $creator= User::findById($project->getCreatedBy());
-// controller--viewAction
-$project= Project::findById($id);
+
 
 ?>
 <!DOCTYPE html>

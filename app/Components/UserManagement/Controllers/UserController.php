@@ -65,24 +65,19 @@ class UserController
         
       // plaintext; save() will hash
             // defaults: language = 'en', focus_mode = false
+            if($user->save()){
+                $_SESSION['user'] = $user;
+            }
             if($user->getRole()=='student'){
 
-                header('Location: ../Views/dashboard.php');
+                header('Location: ../Views/userDashboard.php');
+            }
+            if($user->getRole()=='admin'){
+                header('Location: ../../projectManagement/Views/ProjectList.php');
+            }
 
-            }
-            if ($user->save()) {
-                $_SESSION['user_id'] = $user->getUserId();
-                $_SESSION['role']    = $user->getRole();
-                header('Location: dashboard.php');
-                exit;
-            } else {
-                $error = 'Registration failed. Please try again.';
-                include __DIR__ . '/../Views/register.html';
-            }
-        } else {
-            include __DIR__ . '/../Views/register.html';
-        }
     }
+}
 
     /**
      * Log the user out.

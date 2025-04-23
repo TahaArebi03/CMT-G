@@ -21,9 +21,9 @@ class ProjectController
     {
         $db    = new Connect();
         $pdo   = $db->conn;
-        $stmt  = $pdo->query("SELECT * FROM projects ORDER BY project_id DESC");
-        $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        $project_id = $_SESSION['user']->getProjectId();
+        $stmt  = $pdo->query("SELECT * FROM projects where project_id = $project_id");
+        $project = $stmt->fetchAll(PDO::FETCH_ASSOC);
         // عرض الـ view
         include __DIR__ . '/../Views/projectList.php';
     }
@@ -39,8 +39,7 @@ class ProjectController
                 'description' => trim($_POST['description'] ?? ''),
                 'objectives'  => trim($_POST['objectives'] ?? ''),
                 'deadline'    => trim($_POST['deadline'] ?? date('Y-m-d H:i:s')),
-                'status'      => trim($_POST['status'] ?? 'active'),
-                'created_by'  => $_SESSION['user_id'] ?? null
+                'status'      => trim($_POST['status'] ?? 'active')
             ];
             $project = Project::createProject($data);
             header('Location: ProjectController.php?action=list');
@@ -63,6 +62,7 @@ class ProjectController
         }
         $project = Project::findById($id);
         include __DIR__ . '/../Views/projectDetails.php';
+
     }
 
     /**

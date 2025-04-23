@@ -9,7 +9,7 @@ class User {
     private $role;
     private $language;
     private $focus_mode;  // boolean
-
+    private $project_id;
     public function __construct() {
         // تظل البيانات فارغة إلى أن تُحمَّل من DB أو يضبطها setter
     }
@@ -32,6 +32,9 @@ class User {
     public function isFocusMode()      { return $this->focus_mode; }
     public function setFocusMode($f)   { $this->focus_mode = (bool)$f; }
 
+    public function getProjectId()      { return $this->project_id; }
+    public function setProjectId($p)   { $this->project_id = $p; }
+
     /**
      * يشفر كلمة المرور ويخزنها
      */
@@ -50,7 +53,7 @@ class User {
             // تحديث
             $stmt = $pdo->prepare(
               "UPDATE users
-               SET name = ?, email = ?, password = ?, role = ?, language = ?, focus_mode = ?
+               SET name = ?, email = ?, password = ?, role = ?, language = ?, focus_mode = ?, project_id = ?
                WHERE user_id = ?"
             );
             return $stmt->execute([
@@ -60,13 +63,13 @@ class User {
                 $this->role,
                 $this->language,
                 (int)$this->focus_mode,
-                $this->userId
+                $this->project_id
             ]);
         } else {
             // إدراج جديد
             $stmt = $pdo->prepare(
-              "INSERT INTO users (name, email, password, role, language, focus_mode)
-               VALUES (?, ?, ?, ?, ?, ?)"
+              "INSERT INTO users (name, email, password, role, language, focus_mode, project_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?)"
             );
             $ok = $stmt->execute([
                 $this->name,
@@ -74,7 +77,8 @@ class User {
                 $this->password,
                 $this->role,
                 $this->language,
-                (int)$this->focus_mode
+                (int)$this->focus_mode,
+                $this->project_id
             ]);
             if ($ok) {
                 $this->userId = $pdo->lastInsertId();

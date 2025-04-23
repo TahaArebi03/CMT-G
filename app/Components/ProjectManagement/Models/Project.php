@@ -11,7 +11,6 @@ class Project
     private $objectives;
     private $deadline;    // string في شكل 'YYYY-MM-DD HH:MM:SS'
     private $status;      // 'active' أو 'archived'
-    private $created_by;  // user_id
 
     public function __construct() {}
 
@@ -33,8 +32,6 @@ class Project
     public function getStatus()        { return $this->status; }
     public function setStatus($s)      { $this->status = $s; }
 
-    public function getCreatedBy()     { return $this->created_by; }
-    public function setCreatedBy($u)   { $this->created_by = $u; }
 
     /**
      * تنفيذ INSERT أو UPDATE.
@@ -63,20 +60,30 @@ class Project
             // إدراج جديد
             $stmt = $pdo->prepare(
               "INSERT INTO projects
-               (title, description, objectives, deadline, status, created_by)
-               VALUES (?, ?, ?, ?, ?, ?)"
+               (title, description, objectives, deadline, status)
+               VALUES (?, ?, ?, ?, ?)"
             );
             $ok = $stmt->execute([
                 $this->title,
                 $this->description,
                 $this->objectives,
                 $this->deadline,
-                $this->status,
-                $this->created_by
+                $this->status
             ]);
+
+            
+
+            
+           
             if ($ok) {
+                //get the project id
+                $project_Id = $pdo->lastInsertId();
                 $this->project_id = $pdo->lastInsertId();
+                //set the project id to the user
+                $_SESSION['user']->setProjectId($project_Id);
+                $_SESSION['user']->save();
             }
+            
             return $ok;
         }
     }
@@ -92,7 +99,6 @@ class Project
         $p->setObjectives($data['objectives'] ?? '');
         $p->setDeadline($data['deadline'] ?? date('Y-m-d H:i:s'));
         $p->setStatus($data['status'] ?? 'active');
-        $p->setCreatedBy($data['created_by'] ?? null);
 
         return $p->save() ? $p : null;
     }
@@ -125,8 +131,7 @@ class Project
             'description' => $this->description,
             'objectives'  => $this->objectives,
             'deadline'    => $this->deadline,
-            'status'      => $this->status,
-            'created_by'  => $this->created_by
+            'status'      => $this->status
         ];
     }
 
@@ -149,7 +154,6 @@ class Project
         $p->objectives   = $row['objectives'];
         $p->deadline     = $row['deadline'];
         $p->status       = $row['status'];
-        $p->created_by   = $row['created_by'];
         return $p;
     }
 }
