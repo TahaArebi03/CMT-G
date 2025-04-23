@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
     header("Location: ../Auth/inout.php");
     exit;
 }
-// Note 31
+
 ?>
 <h2>مرحبا بك في لوحة تحكم المسؤول</h2>
 <ul>
