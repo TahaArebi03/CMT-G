@@ -1,9 +1,11 @@
 <?php
-// File: /app/Components/ProjectManagement/Controllers/ProjectMemberController.php
+
 
 require_once __DIR__ . '/../../../../config/config.php';
 require_once __DIR__ . '/../Models/ProjectMember.php';
 require_once __DIR__ . '/../Models/Project.php';
+require_once __DIR__ . '../../../UserManagement/Models/StudentUser.php';
+
 
 class ProjectMemberController
 {
@@ -25,7 +27,7 @@ class ProjectMemberController
             exit;
         }
         $members = ProjectMember::findByProjectId($projectId);
-        include __DIR__ . '/../Views/memberList.html';
+        include __DIR__ . '/../Views/projectDetails.php';
     }
 
     /**
@@ -39,10 +41,12 @@ class ProjectMemberController
             $member->setUserId(intval($_POST['user_id']));
             $member->setRoleInProject(trim($_POST['role_in_project'] ?? 'member'));
             $member->save();
+            $students= StudentUser::findAllStudents();
+            include __DIR__ . '../../Views/addMemberForm.php';
             header("Location: ProjectMemberController.php?action=list&project_id={$member->getProjectId()}");
             exit;
         } else {
-            include __DIR__ . '/../Views/memberForm.html';
+            include __DIR__ . '/../Views/addMember.php';
         }
     }
 
@@ -59,15 +63,13 @@ class ProjectMemberController
             header("Location: ProjectMemberController.php?action=list&project_id={$member->getProjectId()}");
             exit;
         } else {
-            // نموذج التعديل يمكن أن يكون نفسه memberForm.html مع حقول معبأة
-            include __DIR__ . '/../Views/memberForm.html';
+
+            include __DIR__ . '/../Views/addMemberForm.html';
         }
     }
 }
 
-/**
- * Router-like dispatch
- */
+
 $pmController = new ProjectMemberController();
 $action       = $_GET['action'] ?? 'list';
 

@@ -1,5 +1,4 @@
 <?php
-// File: /app/Components/ProjectManagement/Models/ProjectMember.php
 
 require_once __DIR__ . '/../../../../config/config.php';
 
@@ -7,7 +6,7 @@ class ProjectMember
 {
     private $project_id;
     private $user_id;
-    private $role_in_project; // 'member', 'team_leader', إلخ
+    private $role_in_project;
 
     public function __construct() {}
 
@@ -19,17 +18,6 @@ class ProjectMember
     public function setUserId($uid)       { $this->user_id = $uid; }
     public function setRoleInProject($r)  { $this->role_in_project = $r; }
 
-    /**
-     * استرجاع معلومات العضوية كمصفوفة.
-     */
-    public function getMemberInfo(): array
-    {
-        return [
-            'project_id'       => $this->project_id,
-            'user_id'          => $this->user_id,
-            'role_in_project'  => $this->role_in_project
-        ];
-    }
 
     /**
      * تحديث دور العضو في المشروع.
@@ -69,10 +57,8 @@ class ProjectMember
         ]);
     }
 
-    /**
-     * استرجاع كل الأعضاء لمشروع معيّن.
-     * @return ProjectMember[]
-     */
+    // استرجاع كل الأعضاء لمشروع معيّن.
+    
     public static function findByProjectId(int $projectId): array
     {
         $db  = new Connect();
@@ -90,6 +76,7 @@ class ProjectMember
             $m->role_in_project = $row['role_in_project'];
             $members[] = $m;
         }
+        var_dump($members);
         return $members;
     }
 }

@@ -1,8 +1,8 @@
 <?php  
 require_once __DIR__ . '../../../UserManagment/Models/User.php';
-// createdBy = user_id ->session
-// getName for created project
-$creator= User::findById($project->getCreatedBy());
+require_once __DIR__ . '../../Models/ProjectMember.php';
+
+
 
 
 ?>
@@ -33,12 +33,32 @@ $creator= User::findById($project->getCreatedBy());
           <?= ucfirst($st) ?>
         </span>
       </p>
-      <p><strong>Created By:</strong>
-        <?= htmlspecialchars($creator?->getName() ?? 'Unknown') ?>
-      </p>
+   
     </div>
     <a href="ProjectController.php?action=edit&id=<?= $project->getId() ?>"
        class="btn edit">✏️ Edit Project</a>
   </div>
+  <h3>أعضاء المشروع</h3>
+<table>
+  <thead><tr><th>الاسم</th><th>الدور</th><th>إجراءات</th></tr></thead>
+  <tbody>
+  <?php foreach ($members as $m): ?>
+    <?php $user= User::findById($m->getUserId());  ?>
+    <tr>
+      <td><?= htmlspecialchars($user->getName())?> </td>
+      <td><?= htmlspecialchars($m->getRoleInProject()) ?></td>
+      <td>
+        <a href="ProjectMemberController.php?action=edit
+                 &project_id=<?= $m->getProjectId() ?>
+                 &user_id=<?= $m->getUserId() ?>">تعديل</a>
+      </td>
+    </tr>
+  <?php endforeach; ?>
+  </tbody>
+</table>
+<a href="addMemberForm.php?project_id=<?= $project->getId() ?>"
+   class="btn">+ إضافة عضو</a>
+
+  
 </body>
 </html>

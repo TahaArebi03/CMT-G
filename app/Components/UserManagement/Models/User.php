@@ -9,7 +9,7 @@ class User {
     private $role;
     private $language;
     private $focus_mode;  // boolean
-    private $project_id;
+    private $projectId;
     public function __construct() {
         // تظل البيانات فارغة إلى أن تُحمَّل من DB أو يضبطها setter
     }
@@ -32,8 +32,8 @@ class User {
     public function isFocusMode()      { return $this->focus_mode; }
     public function setFocusMode($f)   { $this->focus_mode = (bool)$f; }
 
-    public function getProjectId()      { return $this->project_id; }
-    public function setProjectId($p)   { $this->project_id = $p; }
+    public function getProjectId()      { return $this->projectId; }
+    public function setProjectId($p)   { $this->projectId = $p; }
 
     /**
      * يشفر كلمة المرور ويخزنها
@@ -53,7 +53,7 @@ class User {
             // تحديث
             $stmt = $pdo->prepare(
               "UPDATE users
-               SET name = ?, email = ?, password = ?, role = ?, language = ?, focus_mode = ?, project_id = ?
+               SET name = ?, email = ?, password = ?, role = ?, language = ?, focus_mode = ?, projectId = ?
                WHERE user_id = ?"
             );
             return $stmt->execute([
@@ -63,12 +63,12 @@ class User {
                 $this->role,
                 $this->language,
                 (int)$this->focus_mode,
-                $this->project_id
+                $this->projectId
             ]);
         } else {
             // إدراج جديد
             $stmt = $pdo->prepare(
-              "INSERT INTO users (name, email, password, role, language, focus_mode, project_id)
+              "INSERT INTO users (name, email, password, role, language, focus_mode, projectId)
                VALUES (?, ?, ?, ?, ?, ?, ?)"
             );
             $ok = $stmt->execute([
@@ -78,7 +78,7 @@ class User {
                 $this->role,
                 $this->language,
                 (int)$this->focus_mode,
-                $this->project_id
+                $this->projectId
             ]);
             if ($ok) {
                 $this->userId = $pdo->lastInsertId();
@@ -114,6 +114,7 @@ class User {
         $u->role       = $row['role'];
         $u->language   = $row['language'];
         $u->focus_mode = (bool)$row['focus_mode'];
+        $u->projectId  =$row['project_id'];
         return $u;
     }
 
@@ -122,7 +123,7 @@ class User {
         $pdo = $db->conn;
         $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
         $stmt->execute([$id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (!$row) return null;
 
         $u = new User();
@@ -132,18 +133,19 @@ class User {
         $u->password   = $row['password'];
         $u->role       = $row['role'];
         $u->language   = $row['language'];
-        $u->focus_mode = (bool)$row['focus_mode'];
+        $u->projectId  =$row['project_id']; 
         return $u;
     }
 
     public function getUserInfo(): array {
         return [
-            'userId'     => $this->userId,
+            'user_id'    => $this->userId,
             'name'       => $this->name,
             'email'      => $this->email,
             'role'       => $this->role,
             'language'   => $this->language,
-            'focus_mode' => $this->focus_mode
+            'focus_mode' => $this->focus_mode,
+            'project_id' => $this->projectId
         ];
     }
 }

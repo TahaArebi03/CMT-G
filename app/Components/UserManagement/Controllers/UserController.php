@@ -27,12 +27,13 @@ class UserController
             // Attempt to authenticate
             $user = User::login($email, $password);
             if ($user) {
-                // Store user ID and role in session
-                $_SESSION['user_id'] = $user->getUserId();
-                $_SESSION['role']    = $user->getRole();
-
-                // Redirect to dashboard
-                header('Location: dashboard.php');
+                if($user->getRole()=='student'){
+                    header('Location: ../Views/userDashboard');
+                }
+                elseif($user->getRole()=='admin'){
+                    header('Location: ../../ProjectManagnemt/Views/projectList.php');
+                }
+                
                 exit;
             } else {
                 $error = 'Invalid email or password.';
@@ -95,11 +96,11 @@ class UserController
      */
     public function dashboardAction()
     {
-        if (empty($_SESSION['user_id'])) {
-            header('Location: login.php');
+        if (empty($_SESSION['user']->getUserId)) {
+            header('Location: register.php');
             exit;
         }
-        $user = User::findById($_SESSION['user_id']);
+        $user = User::findById($_SESSION['user']->getUserId);
         include __DIR__ . '/../Views/userDashboard.html';
     }
 
@@ -108,18 +109,18 @@ class UserController
      */
     public function profileAction()
     {
-        if (empty($_SESSION['user_id'])) {
-            header('Location: login.php');
+        if (empty($_SESSION['user']->getUserId)) {
+            header('Location: register.php');
             exit;
         }
-        $user = User::findById($_SESSION['user_id']);
+        $user = User::findById($_SESSION['user']->getUserId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update user properties
             $user->setName(trim($_POST['name'] ?? $user->getName()));
             $user->setEmail(trim($_POST['email'] ?? $user->getEmail()));
             if (!empty($_POST['password'])) {
-                $user->password = trim($_POST['password']); // save() will hash
+                $user->setPassword(trim($_POST['password'])); // save() will hash
             }
             $user->setLanguage($_POST['language'] ?? $user->getLanguage());
             $user->setFocusMode(isset($_POST['focus_mode']));

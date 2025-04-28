@@ -1,5 +1,5 @@
 <?php
-// File: /app/Components/UserManagement/Models/StudentUser.php
+
 require_once __DIR__ . '/../../../../config/config.php';
 require_once __DIR__ . '/User.php';
 
@@ -8,7 +8,7 @@ class StudentUser extends User {
     private $major;
     private $enrollmentYear;
 
-    // getters / setters...
+    // getters / setters
     public function getStudentId()      { return $this->studentId; }
     public function setStudentId($id)   { $this->studentId = $id; }
     public function getMajor()          { return $this->major; }
@@ -16,21 +16,31 @@ class StudentUser extends User {
     public function getEnrollmentYear() { return $this->enrollmentYear; }
     public function setEnrollmentYear($y) { $this->enrollmentYear = $y; }
 
-    /**
-     * استرجاع المشاريع الملتحق بها الطالب
-     */
-    public function getEnrolledProjects() {
+
+
+
+    public static function findAllStudents(): array
+    {
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare(
-          "SELECT p.project_id, p.title
-           FROM projects p
-           JOIN project_members pm ON p.project_id = pm.project_id
-           WHERE pm.user_id = ?"
+          "SELECT * FROM users WHERE role = 'Student'"
         );
-        $stmt->execute([$this->userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $students = [];
+        foreach ($rows as $row) {
+            $s = new StudentUser();
+            $s->setName($row['name']);
+            $s->setEmail($row['email']);
+            $s->setProjectId($row['project_id'] ?? null);
+            $students[] = $s;
+        }
+        return $students;
     }
+
+
 
     /**
      * تسليم واجب
