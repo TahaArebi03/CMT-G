@@ -4,7 +4,7 @@
 // 🔧 ملف: Admin/manage_projects.php
 // إدارة وإنشاء وتعديل المشاريع
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
     header("Location: ../Auth/inout.php");
     exit;
 }
@@ -72,6 +72,9 @@ try {
     <li><a href="manage_projects.php">إدارة المشاريع</a></li>
     <li><a href="manage_tasks.php">إدارة المهام</a></li>
     <li><a href="manage_roles.php">إدارة الأدوار والصلاحيات</a></li>
+    <li><a href="manage_votes.php">ادارة التصويتات</a></li>
+    <li><a href="manage_notifications.php">الإشعارات</a></li>
+    <li><a href="../Auth/out.php" onclick="return confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟');">🔓 تسجيل الخروج</a></li>
 </ul>
 
 <form method="post">
@@ -107,11 +110,6 @@ try {
                         <option value="نشط" <?= $proj['status'] === 'نشط' ? 'selected' : '' ?>>نشط</option>
                         <option value="مؤرشف" <?= $proj['status'] === 'مؤرشف' ? 'selected' : '' ?>>مؤرشف</option>
                     </select>
-                </td>
-                <td>
-                    <input type="hidden" name="update_id" value="<?= $proj['project_id'] ?>">
-                    <button type="submit">💾 حفظ</button>
-                    <a href="?delete=<?= $proj['project_id'] ?>" onclick="return confirm('هل أنت متأكد من الحذف؟')">🗑 حذف</a>
                 </td>
             </form>
         </tr>

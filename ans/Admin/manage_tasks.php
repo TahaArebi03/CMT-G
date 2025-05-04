@@ -1,14 +1,14 @@
 <link rel="stylesheet" href="manage_tasks.css">
 
+
 <?php
-// 🔧 ملف: Admin/manage_tasks.php
-// إدارة المهام: إنشاء، تعديل، حذف حسب الأولوية + إرسال للجميع
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
     header("Location: ../Auth/inout.php");
     exit;
 }
 
+$role = $_SESSION['role'];
 require_once '../Config/connect.php';
 
 $connection = new Connect();
@@ -29,9 +29,9 @@ if (isset($_GET['delete_task'])) {
 // تعديل مهمة
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
     try {
-        $stmt = $conn->prepare("UPDATE tasks SET title=?, description=?, assigned_to=?, status=?, priority=?, deadline=? WHERE task_id=?");
+        $stmt = $conn->prepare("UPDATE tasks SET title=?, description=?, assigned_to=?, status=?, priority=?, deadline=?, allow_comments=? WHERE task_id=?");
         $stmt->execute([
-            $_POST['title'], $_POST['description'], $_POST['assigned_to'], $_POST['status'], $_POST['priority'], $_POST['deadline'], $_POST['task_id']
+            $_POST['title'], $_POST['description'], $_POST['assigned_to'], $_POST['status'], $_POST['priority'], $_POST['deadline'], isset($_POST['allow_comments']) ? 1 : 0, $_POST['task_id']
         ]);
         header("Location: manage_tasks.php");
         exit;
@@ -48,13 +48,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task_all'])) {
         $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($students as $student) {
-            $insert = $conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $insert = $conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline, allow_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $insert->execute([
-                $_POST['project_id'], $_POST['title'], $_POST['description'], $student['user_id'], $_POST['status'], $_POST['priority'], $_POST['deadline']
+                $_POST['project_id'], $_POST['title'], $_POST['description'], $student['user_id'], $_POST['status'], $_POST['priority'], $_POST['deadline'], isset($_POST['allow_comments']) ? 1 : 0
             ]);
         }
-        header("Location: manage_tasks.php");
-        exit;
+        echo "<p style='color:green;'>✅ تم إرسال المهمة لجميع الطلاب بنجاح</p>";
     } catch (PDOException $e) {
         echo "<p style='color:red;'>خطأ في إرسال المهمة للطلاب: " . $e->getMessage() . "</p>";
     }
@@ -63,16 +62,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task_all'])) {
 // إضافة مهمة لطالب محدد
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task'])) {
     try {
-        $stmt = $conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline, allow_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
-            $_POST['project_id'], $_POST['title'], $_POST['description'], $_POST['assigned_to'], $_POST['status'], $_POST['priority'], $_POST['deadline']
+            $_POST['project_id'], $_POST['title'], $_POST['description'], $_POST['assigned_to'], $_POST['status'], $_POST['priority'], $_POST['deadline'], isset($_POST['allow_comments']) ? 1 : 0
         ]);
-        header("Location: manage_tasks.php");
-        exit;
+        echo "<p style='color:green;'>✅ تم إضافة المهمة بنجاح</p>";
     } catch (PDOException $e) {
         echo "<p style='color:red;'>خطأ في إضافة المهمة: " . $e->getMessage() . "</p>";
     }
 }
+
+// حذف تعليق (فقط للمسؤول)
+if ($role === 'مسؤول' && isset($_GET['delete_comment'])) {
+    try {
+        $stmt = $conn->prepare("DELETE FROM comments WHERE comment_id = ?");
+        $stmt->execute([$_GET['delete_comment']]);
+        header("Location: manage_tasks.php");
+        exit;
+    } catch (PDOException $e) {
+        echo "<p style='color:red;'>خطأ في حذف التعليق: " . $e->getMessage() . "</p>";
+    }
+}
+
+// إضافة تعليق
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
+    try {
+        $stmt = $conn->prepare("INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)");
+        $stmt->execute([$_POST['task_id'], $user_id, $_POST['content']]);
+        echo "<p style='color:green;'>✅ تم إضافة التعليق بنجاح</p>";
+    } catch (PDOException $e) {
+        echo "<p style='color:red;'>خطأ في إضافة التعليق: " . $e->getMessage() . "</p>";
+    }
+}
+
 
 // جلب المهام
 try {
@@ -95,6 +117,17 @@ try {
     $projects = [];
     $users = [];
 }
+
+// جلب التعليقات
+$comments_map = [];
+try {
+    $stmt = $conn->query("SELECT c.*, u.name FROM comments c JOIN users u ON c.user_id = u.user_id ORDER BY c.created_at DESC");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $comments_map[$row['task_id']][] = $row;
+    }
+} catch (PDOException $e) {
+    echo "<p style='color:red;'>خطأ في جلب التعليقات: " . $e->getMessage() . "</p>";
+}
 ?>
 
 <h2>➕ إضافة مهمة جديدة</h2>
@@ -103,6 +136,9 @@ try {
     <li><a href="manage_projects.php">إدارة المشاريع</a></li>
     <li><a href="manage_tasks.php">إدارة المهام</a></li>
     <li><a href="manage_roles.php">إدارة الأدوار والصلاحيات</a></li>
+    <li><a href="manage_votes.php">ادارة التصويتات</a></li>
+    <li><a href="manage_notifications.php">الإشعارات</a></li>
+    <li><a href="../Auth/out.php" onclick="return confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟');">🔓 تسجيل الخروج</a></li>
 </ul>
 
 <form method="post">
@@ -139,6 +175,12 @@ try {
         </select>
     </label>
     <label>الموعد النهائي: <input type="date" name="deadline"></label>
+    <label>السماح بالتعليقات:
+        <select name="allow_comments">
+            <option value="1" selected>مسموح</option>
+            <option value="0">غير مسموح</option>
+        </select>
+    </label>
     <button type="submit">➕ إضافة لطالب</button>
 </form>
 
@@ -170,13 +212,19 @@ try {
         </select>
     </label>
     <label>الموعد النهائي: <input type="date" name="deadline"></label>
+    <label>السماح بالتعليقات:
+        <select name="allow_comments">
+            <option value="1" selected>مسموح</option>
+            <option value="0">غير مسموح</option>
+        </select>
+    </label>
     <button type="submit">📤 إرسال للجميع</button>
 </form>
 
 <h2>إدارة المهام</h2>
 <table border="1">
     <tr>
-        <th>المشروع</th><th>العنوان</th><th>الوصف</th><th>المسند إليه</th><th>الحالة</th><th>الأولوية</th><th>الموعد النهائي</th><th>إجراءات</th>
+        <th>المشروع</th><th>العنوان</th><th>الوصف</th><th>المسند إليه</th><th>الحالة</th><th>الأولوية</th><th>الموعد النهائي</th><th>تعليقات</th><th>إجراءات</th>
     </tr>
     <?php foreach ($tasks as $task): ?>
     <tr>
@@ -208,6 +256,12 @@ try {
             </td>
             <td><input type="date" name="deadline" value="<?= $task['deadline'] ?>"></td>
             <td>
+                <select name="allow_comments">
+                    <option value="1" <?= $task['allow_comments'] ? 'selected' : '' ?>>مسموح</option>
+                    <option value="0" <?= !$task['allow_comments'] ? 'selected' : '' ?>>غير مسموح</option>
+                </select>
+            </td>
+            <td>
                 <input type="hidden" name="task_id" value="<?= $task['task_id'] ?>">
                 <button type="submit" name="update_task">💾 حفظ</button>
                 <a href="?delete_task=<?= $task['task_id'] ?>" onclick="return confirm('هل أنت متأكد من حذف المهمة؟')">🗑 حذف</a>
@@ -216,3 +270,45 @@ try {
     </tr>
     <?php endforeach; ?>
 </table>
+
+<h2>📋 المهام والتعليقات</h2>
+
+<?php foreach ($tasks as $task): ?>
+    <div class="task-box">
+        <h3><?= htmlspecialchars($task['title']) ?> (<?= htmlspecialchars($task['project_title']) ?>)</h3>
+        <p><?= htmlspecialchars($task['description']) ?></p>
+        <p><strong>لـ:</strong> <?= htmlspecialchars($task['assigned_name']) ?> | 
+           <strong>الحالة:</strong> <?= $task['status'] ?> | 
+           <strong>الأولوية:</strong> <?= $task['priority'] ?> | 
+           <strong>الموعد:</strong> <?= $task['deadline'] ?>
+        </p>
+
+        <?php if ($task['allow_comments']): ?>
+            <div class="comments-section">
+                <h4>💬 التعليقات:</h4>
+                <?php if (isset($comments_map[$task['task_id']])): ?>
+                    <?php foreach ($comments_map[$task['task_id']] as $comment): ?>
+                        <div class="comment">
+                            <p><strong><?= htmlspecialchars($comment['name']) ?>:</strong> <?= htmlspecialchars($comment['content']) ?></p>
+                            <small><?= $comment['created_at'] ?></small>
+                            <?php if ($role === 'مسؤول'): ?>
+                                <a href="?delete_comment=<?= $comment['comment_id'] ?>" onclick="return confirm('هل تريد حذف هذا التعليق؟')">🗑 حذف</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>لا توجد تعليقات.</p>
+                <?php endif; ?>
+
+                <form method="post" class="comment-form">
+                    <input type="hidden" name="add_comment" value="1">
+                    <input type="hidden" name="task_id" value="<?= $task['task_id'] ?>">
+                    <textarea name="content" placeholder="اكتب تعليقك..." required></textarea>
+                    <button type="submit">➕ إضافة تعليق</button>
+                </form>
+            </div>
+        <?php else: ?>
+            <p><em>🔒 التعليقات غير مفعّلة لهذه المهمة.</em></p>
+        <?php endif; ?>
+    </div>
+<?php endforeach; ?>

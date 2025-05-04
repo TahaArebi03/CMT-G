@@ -2,7 +2,7 @@
 // 🔒 ملف: Admin/dashboard.php
 // صفحة لوحة التحكم الرئيسية للمسؤول
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
     header("Location: ../Auth/inout.php");
     exit;
 }
@@ -13,6 +13,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
     <li><a href="manage_projects.php">إدارة المشاريع</a></li>
     <li><a href="manage_tasks.php">إدارة المهام</a></li>
     <li><a href="manage_roles.php">إدارة الأدوار والصلاحيات</a></li>
+    <li><a href="manage_notifications.php">الإشعارات</a></li>
+    <li><a href="../Auth/out.php" onclick="return confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟');">🔓 تسجيل الخروج</a></li>
 </ul>
 
 

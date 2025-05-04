@@ -1,73 +1,90 @@
 <link rel="stylesheet" href="student_tasks.css">
 
 <?php
-// 🔧 ملف: Student/my_tasks.php
-// عرض المهام المخصصة للمستخدم وتحديث حالتها فقط
 session_start();
+require_once '../Config/connect.php';
+$db = new Connect();
+$conn = $db->conn;
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'طالب') {
     header("Location: ../Auth/inout.php");
     exit;
 }
 
-include '../Includes/header.php';
-require_once '../Config/connect.php';
-
-$connection = new Connect();
-$conn = $connection->conn;
 $user_id = $_SESSION['user_id'];
 
-// تحديث حالة مهمة
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
-    $task_id = $_POST['task_id'];
-    $status = $_POST['status'];
+// إرسال تعليق
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
     try {
-        $stmt = $conn->prepare("UPDATE tasks SET status = ? WHERE task_id = ? AND assigned_to = ?");
-        $stmt->execute([$status, $task_id, $user_id]);
-        header("Location: my_tasks.php");
-        exit;
+        $stmt = $conn->prepare("INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)");
+        $stmt->execute([$_POST['task_id'], $user_id, $_POST['content']]);
+        echo "<p style='color:green;'>✅ تم إرسال التعليق بنجاح</p>";
     } catch (PDOException $e) {
-        echo "<p style='color:red;'>حدث خطأ أثناء تحديث حالة المهمة: " . $e->getMessage() . "</p>";
+        echo "<p style='color:red;'>❌ حدث خطأ: " . $e->getMessage() . "</p>";
     }
 }
 
-// جلب المهام المسندة للمستخدم
+// جلب المهام الخاصة بالطالب
 try {
     $stmt = $conn->prepare("SELECT tasks.*, projects.title AS project_title FROM tasks
-                            LEFT JOIN projects ON tasks.project_id = projects.project_id
-                            WHERE tasks.assigned_to = ?");
+                            JOIN projects ON tasks.project_id = projects.project_id
+                            WHERE assigned_to = ?");
     $stmt->execute([$user_id]);
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    echo "<p style='color:red;'>حدث خطأ أثناء جلب المهام: " . $e->getMessage() . "</p>";
+    echo "<p style='color:red;'>❌ فشل في جلب المهام: " . $e->getMessage() . "</p>";
     $tasks = [];
+}
+
+// جلب التعليقات وتخزينها في مصفوفة حسب task_id
+$comments_map = [];
+try {
+    $stmt = $conn->query("SELECT comments.*, users.name FROM comments JOIN users ON users.user_id = comments.user_id ORDER BY created_at ASC");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $comments_map[$row['task_id']][] = $row;
+    }
+} catch (PDOException $e) {
+    echo "<p style='color:red;'>❌ فشل في جلب التعليقات: " . $e->getMessage() . "</p>";
 }
 ?>
 
 <h2>📋 مهامي</h2>
-<table border="1">
-    <tr>
-        <th>المشروع</th><th>العنوان</th><th>الوصف</th><th>الحالة</th><th>الأولوية</th><th>الموعد النهائي</th><th>إجراء</th>
-    </tr>
-    <?php foreach ($tasks as $task): ?>
-    <tr>
-        <form method="post">
-            <td><?= htmlspecialchars($task['project_title']) ?></td>
-            <td><?= htmlspecialchars($task['title']) ?></td>
-            <td><?= htmlspecialchars($task['description']) ?></td>
-            <td>
-                <select name="status">
-                    <option value="لم تبدأ" <?= $task['status'] === 'لم تبدأ' ? 'selected' : '' ?>>لم تبدأ</option>
-                    <option value="قيد التنفيذ" <?= $task['status'] === 'قيد التنفيذ' ? 'selected' : '' ?>>قيد التنفيذ</option>
-                    <option value="مكتملة" <?= $task['status'] === 'مكتملة' ? 'selected' : '' ?>>مكتملة</option>
-                </select>
-            </td>
-            <td><?= htmlspecialchars($task['priority']) ?></td>
-            <td><?= htmlspecialchars($task['deadline']) ?></td>
-            <td>
-                <input type="hidden" name="task_id" value="<?= $task['task_id'] ?>">
-                <button type="submit" name="update_status">💾 حفظ الحالة</button>
-            </td>
-        </form>
-    </tr>
-    <?php endforeach; ?>
-</table>
+<?php include "../Includes/header.php"; ?>
+<?php foreach ($tasks as $task): ?>
+    <div class="task-card">
+        <h3>📌 <?= htmlspecialchars($task['title']) ?> (<?= htmlspecialchars($task['project_title']) ?>)</h3>
+        <p>📝 <?= htmlspecialchars($task['description']) ?></p>
+        <p>⏰ الموعد النهائي: <?= htmlspecialchars($task['deadline']) ?></p>
+        <p>📊 الحالة: <?= $task['status'] ?> | 🎯 الأولوية: <?= $task['priority'] ?></p>
+
+        <?php if ($task['allow_comments']): ?>
+            <div class="comments-section">
+                <h4>💬 التعليقات:</h4>
+                <?php
+                $comments = $comments_map[$task['task_id']] ?? [];
+                if ($comments):
+                    foreach ($comments as $comment):
+                ?>
+                    <div class="comment">
+                        <strong><?= htmlspecialchars($comment['name']) ?>:</strong>
+                        <?= nl2br(htmlspecialchars($comment['content'])) ?>
+                        <br><small>📅 <?= $comment['created_at'] ?></small>
+                    </div>
+                <?php
+                    endforeach;
+                else:
+                    echo "<p>لا توجد تعليقات بعد.</p>";
+                endif;
+                ?>
+
+                <form method="POST" class="comment-form">
+                    <input type="hidden" name="task_id" value="<?= $task['task_id'] ?>">
+                    <textarea name="content" placeholder="✍️ اكتب تعليقك هنا..." required></textarea>
+                    <button type="submit" name="add_comment">📩 إرسال</button>
+                </form>
+            </div>
+        <?php else: ?>
+            <p class="no-comments">💡 التعليقات غير مفعلة لهذه المهمة.</p>
+        <?php endif; ?>
+    </div>
+<?php endforeach; ?>

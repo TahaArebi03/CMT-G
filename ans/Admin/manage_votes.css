@@ -1,0 +1,182 @@
+/* الأساسيات */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    margin: 20px;
+    direction: rtl;
+    color: #333;
+}
+
+/* العناوين */
+h2, h3 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* النموذج */
+form {
+    background-color: #ffffff;
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border: 1px solid #ddd;
+}
+
+label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="date"],
+textarea,
+select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* الأزرار */
+button {
+    background-color: #17a2b8;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #138496;
+}
+
+/* الجداول */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+th {
+    background-color: #e9ecef;
+    color: #333;
+}
+
+/* الروابط العامة */
+a {
+    color: #dc3545;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ✅ شريط التنقل (أزرار عريضة) */
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.nav-buttons a {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 12px 25px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.nav-buttons a:hover {
+    background-color: #f1f9ff;
+    color: #0056b3;
+    transform: translateY(-3px);
+}
+
+/* قائمة نتائج التصويت */
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+}
+
+ul li {
+    padding: 6px;
+    font-size: 16px;
+}
+
+a {
+    color: #dc3545;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+ul {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    list-style: none;
+    padding: 0;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+ul li {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    width: 220px;
+    text-align: center;
+}
+
+ul li:hover {
+    transform: translateY(-5px);
+    background-color: #f0f8ff;
+}
+
+ul li a {
+    display: block;
+    padding: 18px 25px;
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+ul li a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+

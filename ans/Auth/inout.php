@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-<?php include "../Includes/header.php"; ?>
+<link rel="stylesheet" href="../Includes/style.css">
 
 <form method="POST" action="">
     <h2>تسجيل الدخول</h2>
