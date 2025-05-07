@@ -1,68 +1,93 @@
-<link rel="stylesheet" href="manage_votes.css">
-
 <?php
 require_once "../config/connect.php";
-$db = new Connect();
-$conn = $db->conn;
-
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
+
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق')) {
     echo "غير مصرح";
     exit;
 }
 
-// حذف التصييت
+class VoteManager {
+    private $conn;
+    private $user_id;
+
+    public function __construct($db, $user_id) {
+        $this->conn = $db->conn;
+        $this->user_id = $user_id;
+    }
+
+    // حذف التصويت
+    public function deleteVote($vote_id) {
+        try {
+            $stmt1 = $this->conn->prepare("DELETE FROM vote_responses WHERE vote_id = ?");
+            $stmt1->execute([$vote_id]);
+
+            $stmt2 = $this->conn->prepare("DELETE FROM votes WHERE vote_id = ?");
+            $stmt2->execute([$vote_id]);
+
+            return "<p style='color:green;'>✅ تم حذف التصويت</p>";
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>❌ خطأ في حذف التصويت: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // إنشاء تصويت جديد
+    public function createVote($question, $options) {
+        $project_id = 1; // مؤقتاً نربط كل التصويتات بمشروع رقم 1
+        $created_by = $this->user_id;
+        $options_json = json_encode(explode("\n", trim($options)), JSON_UNESCAPED_UNICODE);
+
+        try {
+            $stmt = $this->conn->prepare("INSERT INTO votes (project_id, question, options, status, created_by) VALUES (?, ?, ?, 'مفتوح', ?)");
+            $stmt->execute([$project_id, $question, $options_json, $created_by]);
+            return "<p style='color:green;'>✅ تم إنشاء التصويت بنجاح</p>";
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>❌ خطأ في إنشاء التصويت: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // جلب التصويتات
+    public function getVotes() {
+        try {
+            $stmt = $this->conn->prepare("SELECT * FROM votes ORDER BY vote_id DESC");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            echo "<p style='color:red;'>❌ فشل في جلب التصويتات: " . $e->getMessage() . "</p>";
+            return [];
+        }
+    }
+
+    // حساب عدد الأصوات
+    public function countVotes($vote_id, $option) {
+        try {
+            $stmt = $this->conn->prepare("SELECT COUNT(*) FROM vote_responses WHERE vote_id = ? AND TRIM(selected_option) = ?");
+            $stmt->execute([$vote_id, $option]);
+            return $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            return "خطأ";
+        }
+    }
+}
+
+$db = new Connect();
+$voteManager = new VoteManager($db, $_SESSION['user_id']);
+
+// Handle deletion of a vote
 if (isset($_GET['delete_vote'])) {
     $vote_id = $_GET['delete_vote'];
-    try {
-        $stmt = $conn->prepare("DELETE FROM vote_responses WHERE vote_id = ?");
-        $stmt->execute([$vote_id]);
-
-        $stmt2 = $conn->prepare("DELETE FROM votes WHERE vote_id = ?");
-        $stmt2->execute([$vote_id]);
-
-        echo "<p style='color:green;'>✅ تم حذف التصويت</p>";
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>❌ خطأ في حذف التصويت: " . $e->getMessage() . "</p>";
-    }
+    echo $voteManager->deleteVote($vote_id);
 }
 
-// إنشاء تصويت جديد
+// Handle creation of a new vote
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_vote'])) {
-    $project_id = 1; // مؤقتاً نربط كل التصويتات بمشروع رقم 1
     $question = $_POST['question'];
-    $options = json_encode(explode("\n", trim($_POST['options'])), JSON_UNESCAPED_UNICODE); // ✅ تعديل هنا
-    $created_by = $_SESSION['user_id'];
-
-    try {
-        $stmt = $conn->prepare("INSERT INTO votes (project_id, question, options, status, created_by) VALUES (?, ?, ?, 'مفتوح', ?)");
-        $stmt->execute([$project_id, $question, $options, $created_by]);
-        echo "<p style='color:green;'>✅ تم إنشاء التصويت بنجاح</p>";
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>❌ خطأ في إنشاء التصويت: " . $e->getMessage() . "</p>";
-    }
+    $options = $_POST['options'];
+    echo $voteManager->createVote($question, $options);
 }
 
-// جلب التصويتات
-try {
-    $stmt = $conn->prepare("SELECT * FROM votes ORDER BY vote_id DESC");
-    $stmt->execute();
-    $votes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "<p style='color:red;'>❌ فشل في جلب التصويتات: " . $e->getMessage() . "</p>";
-    $votes = [];
-}
-
-// حساب عدد الأصوات
-function countVotes($conn, $vote_id, $option) {
-    try {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM vote_responses WHERE vote_id = ? AND TRIM(selected_option) = ?");
-        $stmt->execute([$vote_id, $option]);
-        return $stmt->fetchColumn();
-    } catch (PDOException $e) {
-        return "خطأ";
-    }
-}
+// Fetch all votes
+$votes = $voteManager->getVotes();
 ?>
 
 <!DOCTYPE html>
@@ -100,13 +125,13 @@ function countVotes($conn, $vote_id, $option) {
     <div class="vote-box">
         <strong>📝 السؤال:</strong> <?= htmlspecialchars($vote['question']) ?><br>
         <strong>📌 الحالة:</strong> <?= htmlspecialchars($vote['status']) ?><br><br>
-                <!-- ✅ زر الحذف منسق -->
+        <!-- ✅ زر الحذف -->
         <a href="?delete_vote=<?= $vote['vote_id'] ?>" class="delete-btn" onclick="return confirm('هل أنت متأكد من حذف التصويت؟');">🗑️ حذف التصويت</a>
         <ul>
             <?php
             $options = json_decode($vote['options']);
             foreach ($options as $opt):
-                $count = countVotes($conn, $vote['vote_id'], trim($opt));
+                $count = $voteManager->countVotes($vote['vote_id'], trim($opt));
                 ?>
                 <li><?= htmlspecialchars($opt) ?>: <strong><?= $count ?></strong> صوت</li>
             <?php endforeach; ?>
