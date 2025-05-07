@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESS
     exit;
 }
 
-// حذف التصوييت
+// حذف التصييت
 if (isset($_GET['delete_vote'])) {
     $vote_id = $_GET['delete_vote'];
     try {

@@ -22,7 +22,7 @@ try {
     $votes = [];
 }
 
-// تنفيذ التصوييت
+// تنفيذ التصويت
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['vote_id']) && isset($_POST['option'])) {
     $vote_id = $_POST['vote_id'];
     $option = $_POST['option'];

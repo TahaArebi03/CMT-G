@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESS
     exit;
 }
 
-// جلبب الطلاب
+// جلب الطلاب
 try {
     $stmt = $conn->prepare("SELECT user_id, name FROM users WHERE role = 'طالب'");
     $stmt->execute();
