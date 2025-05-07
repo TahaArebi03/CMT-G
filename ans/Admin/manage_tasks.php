@@ -1,133 +1,177 @@
-<link rel="stylesheet" href="manage_tasks.css">
-
-
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق')) {
     header("Location: ../Auth/inout.php");
     exit;
 }
 
-$role = $_SESSION['role'];
 require_once '../Config/connect.php';
 
-$connection = new Connect();
-$conn = $connection->conn;
+class TaskManager {
+    private $conn;
+    private $role;
 
-// حذف مهمة
-if (isset($_GET['delete_task'])) {
-    try {
-        $stmt = $conn->prepare("DELETE FROM tasks WHERE task_id = ?");
-        $stmt->execute([$_GET['delete_task']]);
-        header("Location: manage_tasks.php");
-        exit;
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في حذف المهمة: " . $e->getMessage() . "</p>";
+    public function __construct($db, $role) {
+        $this->conn = $db->conn;
+        $this->role = $role;
     }
-}
 
-// تعديل مهمة
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_task'])) {
-    try {
-        $stmt = $conn->prepare("UPDATE tasks SET title=?, description=?, assigned_to=?, status=?, priority=?, deadline=?, allow_comments=? WHERE task_id=?");
-        $stmt->execute([
-            $_POST['title'], $_POST['description'], $_POST['assigned_to'], $_POST['status'], $_POST['priority'], $_POST['deadline'], isset($_POST['allow_comments']) ? 1 : 0, $_POST['task_id']
-        ]);
-        header("Location: manage_tasks.php");
-        exit;
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في تعديل المهمة: " . $e->getMessage() . "</p>";
-    }
-}
-
-// إرسال مهمة للجميع
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task_all'])) {
-    try {
-        $stmt = $conn->prepare("SELECT user_id FROM users WHERE role = 'طالب'");
-        $stmt->execute();
-        $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($students as $student) {
-            $insert = $conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline, allow_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $insert->execute([
-                $_POST['project_id'], $_POST['title'], $_POST['description'], $student['user_id'], $_POST['status'], $_POST['priority'], $_POST['deadline'], isset($_POST['allow_comments']) ? 1 : 0
-            ]);
+    // حذف مهمة
+    public function deleteTask($task_id) {
+        try {
+            $stmt = $this->conn->prepare("DELETE FROM tasks WHERE task_id = ?");
+            $stmt->execute([$task_id]);
+            header("Location: manage_tasks.php");
+            exit;
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في حذف المهمة: " . $e->getMessage() . "</p>";
         }
-        echo "<p style='color:green;'>✅ تم إرسال المهمة لجميع الطلاب بنجاح</p>";
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في إرسال المهمة للطلاب: " . $e->getMessage() . "</p>";
+    }
+
+    // تعديل مهمة
+    public function updateTask($data) {
+        try {
+            $stmt = $this->conn->prepare("UPDATE tasks SET title=?, description=?, assigned_to=?, status=?, priority=?, deadline=?, allow_comments=? WHERE task_id=?");
+            $stmt->execute([
+                $data['title'], $data['description'], $data['assigned_to'], $data['status'], $data['priority'], $data['deadline'], isset($data['allow_comments']) ? 1 : 0, $data['task_id']
+            ]);
+            header("Location: manage_tasks.php");
+            exit;
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في تعديل المهمة: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // إرسال مهمة للجميع
+    public function addTaskToAll($data) {
+        try {
+            $stmt = $this->conn->prepare("SELECT user_id FROM users WHERE role = 'طالب'");
+            $stmt->execute();
+            $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($students as $student) {
+                $insert = $this->conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline, allow_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $insert->execute([
+                    $data['project_id'], $data['title'], $data['description'], $student['user_id'], $data['status'], $data['priority'], $data['deadline'], isset($data['allow_comments']) ? 1 : 0
+                ]);
+            }
+            return "<p style='color:green;'>✅ تم إرسال المهمة لجميع الطلاب بنجاح</p>";
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في إرسال المهمة للطلاب: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // إضافة مهمة لطالب محدد
+    public function addTaskToStudent($data) {
+        try {
+            $stmt = $this->conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline, allow_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $data['project_id'], $data['title'], $data['description'], $data['assigned_to'], $data['status'], $data['priority'], $data['deadline'], isset($data['allow_comments']) ? 1 : 0
+            ]);
+            return "<p style='color:green;'>✅ تم إضافة المهمة بنجاح</p>";
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في إضافة المهمة: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // حذف تعليق
+    public function deleteComment($comment_id) {
+        if ($this->role === 'مسؤول') {
+            try {
+                $stmt = $this->conn->prepare("DELETE FROM comments WHERE comment_id = ?");
+                $stmt->execute([$comment_id]);
+                header("Location: manage_tasks.php");
+                exit;
+            } catch (PDOException $e) {
+                return "<p style='color:red;'>خطأ في حذف التعليق: " . $e->getMessage() . "</p>";
+            }
+        }
+    }
+
+    // إضافة تعليق
+    public function addComment($data) {
+        try {
+            $stmt = $this->conn->prepare("INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)");
+            $stmt->execute([$data['task_id'], $data['user_id'], $data['content']]);
+            return "<p style='color:green;'>✅ تم إضافة التعليق بنجاح</p>";
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في إضافة التعليق: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // جلب المهام
+    public function getTasks() {
+        try {
+            $stmt = $this->conn->prepare("SELECT tasks.*, users.name AS assigned_name, projects.title AS project_title FROM tasks
+                                          LEFT JOIN users ON tasks.assigned_to = users.user_id
+                                          LEFT JOIN projects ON tasks.project_id = projects.project_id");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في جلب المهام: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // جلب المشاريع
+    public function getProjects() {
+        try {
+            return $this->conn->query("SELECT project_id, title FROM projects")->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    // جلب المستخدمين
+    public function getUsers() {
+        try {
+            return $this->conn->query("SELECT user_id, name FROM users")->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    // جلب التعليقات
+    public function getComments() {
+        $comments_map = [];
+        try {
+            $stmt = $this->conn->query("SELECT c.*, u.name FROM comments c JOIN users u ON c.user_id = u.user_id ORDER BY c.created_at DESC");
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $comments_map[$row['task_id']][] = $row;
+            }
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في جلب التعليقات: " . $e->getMessage() . "</p>";
+        }
+        return $comments_map;
     }
 }
 
-// إضافة مهمة لطالب محدد
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_task'])) {
-    try {
-        $stmt = $conn->prepare("INSERT INTO tasks (project_id, title, description, assigned_to, status, priority, deadline, allow_comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $_POST['project_id'], $_POST['title'], $_POST['description'], $_POST['assigned_to'], $_POST['status'], $_POST['priority'], $_POST['deadline'], isset($_POST['allow_comments']) ? 1 : 0
-        ]);
-        echo "<p style='color:green;'>✅ تم إضافة المهمة بنجاح</p>";
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في إضافة المهمة: " . $e->getMessage() . "</p>";
+$connection = new Connect();
+$taskManager = new TaskManager($connection, $_SESSION['role']);
+
+if (isset($_GET['delete_task'])) {
+    echo $taskManager->deleteTask($_GET['delete_task']);
+}
+
+if (isset($_GET['delete_comment'])) {
+    echo $taskManager->deleteComment($_GET['delete_comment']);
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['update_task'])) {
+        echo $taskManager->updateTask($_POST);
+    } elseif (isset($_POST['add_task_all'])) {
+        echo $taskManager->addTaskToAll($_POST);
+    } elseif (isset($_POST['add_task'])) {
+        echo $taskManager->addTaskToStudent($_POST);
+    } elseif (isset($_POST['add_comment'])) {
+        echo $taskManager->addComment($_POST);
     }
 }
 
-// حذف تعليق (فقط للمسؤول)
-if ($role === 'مسؤول' && isset($_GET['delete_comment'])) {
-    try {
-        $stmt = $conn->prepare("DELETE FROM comments WHERE comment_id = ?");
-        $stmt->execute([$_GET['delete_comment']]);
-        header("Location: manage_tasks.php");
-        exit;
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في حذف التعليق: " . $e->getMessage() . "</p>";
-    }
-}
-
-// إضافة تعليق
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_comment'])) {
-    try {
-        $stmt = $conn->prepare("INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)");
-        $stmt->execute([$_POST['task_id'], $user_id, $_POST['content']]);
-        echo "<p style='color:green;'>✅ تم إضافة التعليق بنجاح</p>";
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في إضافة التعليق: " . $e->getMessage() . "</p>";
-    }
-}
-
-
-// جلب المهام
-try {
-    $stmt = $conn->prepare("SELECT tasks.*, users.name AS assigned_name, projects.title AS project_title FROM tasks
-                            LEFT JOIN users ON tasks.assigned_to = users.user_id
-                            LEFT JOIN projects ON tasks.project_id = projects.project_id");
-    $stmt->execute();
-    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "<p style='color:red;'>خطأ في جلب المهام: " . $e->getMessage() . "</p>";
-    $tasks = [];
-}
-
-// جلب المشاريع والمستخدمين
-try {
-    $projects = $conn->query("SELECT project_id, title FROM projects")->fetchAll(PDO::FETCH_ASSOC);
-    $users = $conn->query("SELECT user_id, name FROM users")->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "<p style='color:red;'>خطأ في جلب البيانات: " . $e->getMessage() . "</p>";
-    $projects = [];
-    $users = [];
-}
-
-// جلب التعليقات
-$comments_map = [];
-try {
-    $stmt = $conn->query("SELECT c.*, u.name FROM comments c JOIN users u ON c.user_id = u.user_id ORDER BY c.created_at DESC");
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $comments_map[$row['task_id']][] = $row;
-    }
-} catch (PDOException $e) {
-    echo "<p style='color:red;'>خطأ في جلب التعليقات: " . $e->getMessage() . "</p>";
-}
+$tasks = $taskManager->getTasks();
+$projects = $taskManager->getProjects();
+$users = $taskManager->getUsers();
+$comments_map = $taskManager->getComments();
 ?>
 
 <h2>➕ إضافة مهمة جديدة</h2>
