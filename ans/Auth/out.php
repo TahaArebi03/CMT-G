@@ -8,4 +8,7 @@ class SessionManager {
         exit;
     }
 }
+
+$session = new SessionManager();
+$session->logoutAndRedirect();
 ?>
