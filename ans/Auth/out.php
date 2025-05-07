@@ -1,14 +1,11 @@
 <?php
-class SessionManager {
-    public function logoutAndRedirect($redirectTo = 'inout.php') {
-        session_start();
-        session_unset();
-        session_destroy();
-        header("Location: $redirectTo");
-        exit;
-    }
-}
+session_start();
 
-$session = new SessionManager();
-$session->logoutAndRedirect();
+// حذف جميع بيانات الجلسة
+session_unset();
+session_destroy();
+
+// إعادة التوجيه لصفحة تسجيل الدخول
+header("Location: inout.php");
+exit;
 ?>
