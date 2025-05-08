@@ -4,19 +4,7 @@ require_once __DIR__ . '/../../../../config/config.php';
 
 class ProjectMember
 {
-    private $project_id;
-    private $user_id;
-    private $role_in_project;
-
-    public function __construct() {}
-
-    public function getProjectId()        { return $this->project_id; }
-    public function getUserId()           { return $this->user_id; }
-    public function getRoleInProject()    { return $this->role_in_project; }
-
-    public function setProjectId($pid)    { $this->project_id = $pid; }
-    public function setUserId($uid)       { $this->user_id = $uid; }
-    public function setRoleInProject($r)  { $this->role_in_project = $r; }
+   
 
 
     /**
@@ -33,8 +21,8 @@ class ProjectMember
         );
         return $stmt->execute([
             $newRole,
-            $this->project_id,
-            $this->user_id
+            // $this->project_id,
+            // $this->user_id
         ]);
     }
 
@@ -51,32 +39,33 @@ class ProjectMember
            VALUES (?, ?, ?)"
         );
         return $stmt->execute([
-            $this->project_id,
-            $this->user_id,
-            $this->role_in_project
+            // $this->project_id,
+            // $this->user_id,
+            // $this->role_in_project
         ]);
     }
 
     // استرجاع كل الأعضاء لمشروع معيّن.
-    
-    public static function findByProjectId(int $projectId): array
+    // الاسترجاع يكون من كلاس الطالب .
+        
+    public static function findByProjectId(int $project_id): array
     {
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare(
-          "SELECT * FROM project_members WHERE project_id = ?"
+            "SELECT * FROM users WHERE project_id = ?"
         );
-        $stmt->execute([$projectId]);
+        $stmt->execute([$project_id]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $members = [];
         foreach ($rows as $row) {
-            $m = new ProjectMember();
-            $m->project_id      = $row['project_id'];
-            $m->user_id         = $row['user_id'];
-            $m->role_in_project = $row['role_in_project'];
-            $members[] = $m;
+            $s=new User();
+            $s->setName($row['name']);
+            $s->setRole($row['role']);
+            $s->setMajor($row['major']);
+            
+            $members[]=$s;
         }
-        var_dump($members);
         return $members;
     }
 }

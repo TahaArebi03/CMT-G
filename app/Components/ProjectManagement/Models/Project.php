@@ -17,6 +17,7 @@ class Project
     // ——— Getters & Setters ———
 
     public function getId()            { return $this->project_id; }
+    public function setId($id)         { $this->project_id=$id; }
     public function getTitle()         { return $this->title; }
     public function setTitle($t)       { $this->title = $t; }
 
@@ -70,18 +71,8 @@ class Project
                 $this->deadline,
                 $this->status
             ]);
-
-            
-
-            
-           
             if ($ok) {
-                //get the project id
-                $project_Id = $pdo->lastInsertId();
                 $this->project_id = $pdo->lastInsertId();
-                //set the project id to the user
-                $_SESSION['user']->setProjectId($project_Id);
-                $_SESSION['user']->save();
             }
             
             return $ok;
@@ -123,17 +114,17 @@ class Project
     /**
      * ارجع تفاصيل المشروع كمصفوفة.
      */
-    public function getDetails(): array
-    {
-        return [
-            'project_id'  => $this->project_id,
-            'title'       => $this->title,
-            'description' => $this->description,
-            'objectives'  => $this->objectives,
-            'deadline'    => $this->deadline,
-            'status'      => $this->status
-        ];
-    }
+    // public function getDetails(): array
+    // {
+    //     return [
+    //         'project_id'  => $this->project_id,
+    //         'title'       => $this->title,
+    //         'description' => $this->description,
+    //         'objectives'  => $this->objectives,
+    //         'deadline'    => $this->deadline,
+    //         'status'      => $this->status
+    //     ];
+    // }
 
     /**
      * استرجاع مشروع بواسطة المعرف.
@@ -146,14 +137,15 @@ class Project
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) return null;
-        // مفروض - set -بش - details - تكون - get
+    
         $p = new Project();
-        $p->project_id   = $row['project_id'];
-        $p->title        = $row['title'];
-        $p->description  = $row['description'];
-        $p->objectives   = $row['objectives'];
-        $p->deadline     = $row['deadline'];
-        $p->status       = $row['status'];
+        $p->setId($row['project_id']);
+        $p->setTitle($row['title']);
+        $p->setDescription($row['description']);
+        $p->setObjectives($row['objectives']);
+        $p->setDeadline($row['deadline']);
+        $p->setStatus($row['status']) ;
+        
         return $p;
     }
 }

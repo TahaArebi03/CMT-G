@@ -1,7 +1,3 @@
-<?php
-
-$project= Project::findById($id);
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +8,7 @@ $project= Project::findById($id);
 <body>
   <div class="container">
   <?php if (empty($project)): ?>
-      <p class="empty">You are not a member of any project yet.</p>
+      <p class="empty">You dont have any project yet.</p>
       <a href="projectForm.html" class="add-btn">+ Add New Project</a>
     <?php else: ?>
     <h1>My project</h1>

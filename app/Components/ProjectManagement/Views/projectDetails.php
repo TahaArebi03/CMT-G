@@ -1,20 +1,29 @@
-<?php  
-require_once __DIR__ . '../../../UserManagment/Models/User.php';
-require_once __DIR__ . '../../Models/ProjectMember.php';
-
-
-
+<?php
+require_once __DIR__ . '/../../../../config/config.php';
+require_once __DIR__ . '/../Models/Project.php';
+require_once __DIR__ . '/../../UserManagement/Models/StudentUser.php';
+require_once __DIR__ . '/../../UserManagement/Models/User.php';
+require_once __DIR__ . '/../../TaskManagement/Models/Task.php';
+require_once __DIR__ . '/../Models/ProjectMember.php';
 
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
+
 <head>
   <meta charset="UTF-8">
   <title>Project Details | <?= htmlspecialchars($project->getTitle()) ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="projectDetails.css">
+  <link rel="stylesheet" href="../../../../public/css/projectDetails.css">
 </head>
+
+
 <body>
+<div class="tabs">
+  <a href="projectDetails.php?id=<?= $project->getId() ?>">تفاصيل المشروع</a>
+  <a href="../Controllers/ProjectMemberController.php?action=list&project_id= <?= $project->getId() ?>">الأعضاء</a>
+  <a href="../../TaskManagement/Views/projectTask.php?project_id=<?= $project->getId() ?>">المهام</a>
+</div>
   <div class="pd-container">
     <h1>🚀 <?= htmlspecialchars($project->getTitle()) ?></h1>
     <div class="pd-info">
@@ -38,27 +47,5 @@ require_once __DIR__ . '../../Models/ProjectMember.php';
     <a href="ProjectController.php?action=edit&id=<?= $project->getId() ?>"
        class="btn edit">✏️ Edit Project</a>
   </div>
-  <h3>أعضاء المشروع</h3>
-<table>
-  <thead><tr><th>الاسم</th><th>الدور</th><th>إجراءات</th></tr></thead>
-  <tbody>
-  <?php foreach ($members as $m): ?>
-    <?php $user= User::findById($m->getUserId());  ?>
-    <tr>
-      <td><?= htmlspecialchars($user->getName())?> </td>
-      <td><?= htmlspecialchars($m->getRoleInProject()) ?></td>
-      <td>
-        <a href="ProjectMemberController.php?action=edit
-                 &project_id=<?= $m->getProjectId() ?>
-                 &user_id=<?= $m->getUserId() ?>">تعديل</a>
-      </td>
-    </tr>
-  <?php endforeach; ?>
-  </tbody>
-</table>
-<a href="addMemberForm.php?project_id=<?= $project->getId() ?>"
-   class="btn">+ إضافة عضو</a>
 
   
-</body>
-</html>

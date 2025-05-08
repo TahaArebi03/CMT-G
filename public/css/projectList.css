@@ -1,73 +1,147 @@
-/* projectList.css */
+/* File: /app/Components/ProjectManagement/Assets/css/projectList.css */
+
+:root {
+  --primary-color: #4361ee;
+  --secondary-color: #3f37c9;
+  --text-color: #2b2d42;
+  --background-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --border-radius: 10px;
+  --transition: all 0.3s ease;
+}
+
+/* Base Styles */
 body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
   margin: 0;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-  background: #f0f2f5;
 }
 
-.pm-container {
-  max-width: 800px;
-  margin: auto;
-  background: #fff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
-.pm-container h1 {
+/* Heading */
+h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
   text-align: center;
-  color: #333;
-  margin-bottom: 20px;
 }
 
-.btn.add {
-  display: inline-block;
-  margin-bottom: 20px;
-  padding: 10px 16px;
-  background: #28a745;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background 0.3s;
-}
-
-.btn.add:hover {
-  background: #218838;
-}
-
+/* Project List */
 .pm-list {
   list-style: none;
   padding: 0;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .pm-item {
-  background: #e9ecef;
-  padding: 20px;
-  border-radius: 6px;
-  margin-bottom: 15px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.pm-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .pm-item h2 {
-  margin: 0 0 8px;
-  color: #2d3436;
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-color);
 }
 
-.pm-item p {
-  margin: 0 0 12px;
-  color: #555;
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
 }
 
 .btn.view {
-  display: inline-block;
-  padding: 8px 14px;
-  background: #007bff;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background 0.3s;
+  background-color: var(--primary-color);
+  color: white;
 }
 
 .btn.view:hover {
-  background: #0056b3;
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.add-btn {
+  background-color: #2a9d8f;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 1.5rem;
+  transition: var(--transition);
+}
+
+.add-btn:hover {
+  background-color: #21867a;
+  transform: translateY(-2px);
+}
+
+/* Empty State */
+.empty {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin: 3rem 0;
+  padding: 2rem;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .pm-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .pm-item h2 {
+    font-size: 1.2rem;
+  }
+  
+  .btn {
+    padding: 0.6rem 1rem;
+  }
 }

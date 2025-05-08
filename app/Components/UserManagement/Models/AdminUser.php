@@ -1,16 +1,10 @@
 <?php
-// File: /app/Components/UserManagement/Models/AdminUser.php
 require_once __DIR__ . '/../../../../config/config.php';
 require_once __DIR__ . '/User.php';
 
 class AdminUser extends User {
-    private $adminLevel;
-    private $department;
+    
 
-    public function getAdminLevel()     { return $this->adminLevel; }
-    public function setAdminLevel($l)   { $this->adminLevel = $l; }
-    public function getDepartment()     { return $this->department; }
-    public function setDepartment($d)   { $this->department = $d; }
 
     /**
      * جلب جميع المستخدمين لإدارتهم
