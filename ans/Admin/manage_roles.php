@@ -4,82 +4,122 @@
 // 🔧 ملف: Admin/manage_roles.php
 // إدارة الأدوار والصلاحيات بشكل مستقل
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
     header("Location: ../Auth/inout.php");
     exit;
 }
 
 require_once '../Config/connect.php';
 
+// Define the UserManager class
+class UserManager {
+    private $conn;
+
+    public function __construct($db) {
+        $this->conn = $db->conn;
+    }
+
+    // تعديل دور مستخدم
+    public function changeRole($newRole, $userId) {
+        try {
+            $stmt = $this->conn->prepare("UPDATE users SET role = ? WHERE user_id = ?");
+            $stmt->execute([$newRole, $userId]);
+            return true;
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في تعديل الدور: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // حذف مستخدم بعد التأكد من عدم وجود بيانات مرتبطة به
+    public function deleteUser($userId) {
+        try {
+            $check_dependencies = $this->conn->prepare("SELECT COUNT(*) FROM comments WHERE user_id = ?");
+            $check_dependencies->execute([$userId]);
+
+            if ($check_dependencies->fetchColumn() > 0) {
+                return "<p style='color:red;'>⚠️ لا يمكن حذف هذا المستخدم لوجود بيانات مرتبطة به (مثل التعليقات).</p>";
+            } else {
+                $stmt = $this->conn->prepare("DELETE FROM users WHERE user_id = ?");
+                $stmt->execute([$userId]);
+                return true;
+            }
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في حذف المستخدم: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // إضافة مستخدم جديد مع التحقق من البريد المكرر
+    public function addUser($name, $email, $password, $role) {
+        try {
+            // تحقق هل البريد موجود مسبقاً
+            $check = $this->conn->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+            $check->execute([$email]);
+            if ($check->fetchColumn() == 0) {
+                $stmt = $this->conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$name, $email, $password, $role]);
+                return true;
+            } else {
+                return "<p style='color:red;'>⚠️ البريد الإلكتروني مستخدم مسبقاً.</p>";
+            }
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في إضافة المستخدم: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // جلب المستخدمين
+    public function getUsers() {
+        try {
+            $stmt = $this->conn->prepare("SELECT user_id, name, email, role FROM users");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return "<p style='color:red;'>خطأ في جلب المستخدمين: " . $e->getMessage() . "</p>";
+        }
+    }
+}
+
 $connection = new Connect();
-$conn = $connection->conn;
+$userManager = new UserManager($connection);
 
 // تعديل دور مستخدم
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_role'])) {
-    try {
-        $stmt = $conn->prepare("UPDATE users SET role = ? WHERE user_id = ?");
-        $stmt->execute([$_POST['new_role'], $_POST['user_id']]);
+    $message = $userManager->changeRole($_POST['new_role'], $_POST['user_id']);
+    if ($message === true) {
         header("Location: manage_roles.php");
         exit;
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في تعديل الدور: " . $e->getMessage() . "</p>";
+    } else {
+        echo $message;
     }
 }
 
-// حذف مستخدم بعد التأكد من عدم وجود بيانات مرتبطة به
+// حذف مستخدم
 if (isset($_GET['delete_user'])) {
-    $user_id = $_GET['delete_user'];
-    try {
-        // تحقق من وجود تعليقات أو مهام مرتبطة بالمستخدم
-        $check_dependencies = $conn->prepare("SELECT COUNT(*) FROM comments WHERE user_id = ?");
-        $check_dependencies->execute([$user_id]);
-
-        if ($check_dependencies->fetchColumn() > 0) {
-            echo "<p style='color:red;'>⚠️ لا يمكن حذف هذا المستخدم لوجود بيانات مرتبطة به (مثل التعليقات).</p>";
-        } else {
-            $stmt = $conn->prepare("DELETE FROM users WHERE user_id = ?");
-            $stmt->execute([$user_id]);
-            header("Location: manage_roles.php");
-            exit;
-        }
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في حذف المستخدم: " . $e->getMessage() . "</p>";
+    $message = $userManager->deleteUser($_GET['delete_user']);
+    if ($message === true) {
+        header("Location: manage_roles.php");
+        exit;
+    } else {
+        echo $message;
     }
 }
 
-// إضافة مستخدم جديد مع التحقق من البريد المكرر
+// إضافة مستخدم
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $role = $_POST['role'];
 
-    try {
-        // تحقق هل البريد موجود مسبقاً
-        $check = $conn->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
-        $check->execute([$email]);
-        if ($check->fetchColumn() == 0) {
-            $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$name, $email, $password, $role]);
-            header("Location: manage_roles.php");
-            exit;
-        } else {
-            echo "<p style='color:red;'>⚠️ البريد الإلكتروني مستخدم مسبقاً.</p>";
-        }
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في إضافة المستخدم: " . $e->getMessage() . "</p>";
+    $message = $userManager->addUser($name, $email, $password, $role);
+    if ($message === true) {
+        header("Location: manage_roles.php");
+        exit;
+    } else {
+        echo $message;
     }
 }
 
-// جلب المستخدمين
-try {
-    $stmt = $conn->prepare("SELECT user_id, name, email, role FROM users");
-    $stmt->execute();
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "<p style='color:red;'>خطأ في جلب المستخدمين: " . $e->getMessage() . "</p>";
-    $users = [];
-}
+$users = $userManager->getUsers();
 ?>
 
 <h2>إدارة الأدوار والصلاحيات</h2>
@@ -88,6 +128,9 @@ try {
     <li><a href="manage_projects.php">إدارة المشاريع</a></li>
     <li><a href="manage_tasks.php">إدارة المهام</a></li>
     <li><a href="manage_roles.php">إدارة الأدوار والصلاحيات</a></li>
+    <li><a href="manage_votes.php">ادارة التصويتات</a></li>
+    <li><a href="manage_notifications.php">الإشعارات</a></li>
+    <li><a href="../Auth/out.php" onclick="return confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟');">🔓 تسجيل الخروج</a></li>
 </ul>
 
 <h3>➕ إضافة مستخدم جديد</h3>

@@ -4,66 +4,121 @@
 // 🔧 ملف: Admin/manage_projects.php
 // إدارة وإنشاء وتعديل المشاريع
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
     header("Location: ../Auth/inout.php");
     exit;
 }
 
 require_once '../Config/connect.php';
 
+// Define the ProjectManager class
+class ProjectManager {
+    private $conn;
+
+    public function __construct($db) {
+        $this->conn = $db->conn;
+    }
+
+    // حذف مشروع
+    public function deleteProject($projectId) {
+        try {
+            $stmt = $this->conn->prepare("DELETE FROM projects WHERE project_id = ?");
+            $stmt->execute([$projectId]);
+            return true;
+        } catch (PDOException $e) {
+            return "خطأ في حذف المشروع: " . $e->getMessage();
+        }
+    }
+
+    // تعديل مشروع
+    public function updateProject($updateData) {
+        try {
+            $stmt = $this->conn->prepare("UPDATE projects SET title=?, description=?, objectives=?, deadline=?, status=? WHERE project_id=?");
+            $stmt->execute([
+                $updateData['title'], $updateData['description'], $updateData['objectives'], $updateData['deadline'], $updateData['status'], $updateData['update_id']
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            return "خطأ في تعديل المشروع: " . $e->getMessage();
+        }
+    }
+
+    // إضافة مشروع جديد
+    public function addProject($newProjectData) {
+        try {
+            $stmt = $this->conn->prepare("INSERT INTO projects (title, description, objectives, deadline, status, created_by) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $newProjectData['new_title'], $newProjectData['new_description'], $newProjectData['new_objectives'], $newProjectData['new_deadline'], $newProjectData['new_status'], $newProjectData['created_by']
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            return "خطأ في إضافة المشروع: " . $e->getMessage();
+        }
+    }
+
+    // جلب المشاريع
+    public function getProjects() {
+        try {
+            $stmt = $this->conn->prepare("SELECT * FROM projects");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return "خطأ في جلب المشاريع: " . $e->getMessage();
+        }
+    }
+}
+
 $connection = new Connect();
-$conn = $connection->conn;
+$projectManager = new ProjectManager($connection);
 
 // حذف مشروع
 if (isset($_GET['delete'])) {
-    try {
-        $delete_id = $_GET['delete'];
-        $stmt = $conn->prepare("DELETE FROM projects WHERE project_id = ?");
-        $stmt->execute([$delete_id]);
+    $message = $projectManager->deleteProject($_GET['delete']);
+    if ($message === true) {
         header("Location: manage_projects.php");
         exit;
-    } catch (PDOException $e) {
-        echo "خطأ في حذف المشروع: " . $e->getMessage();
+    } else {
+        echo $message;
     }
 }
 
 // تعديل مشروع
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_id'])) {
-    try {
-        $update_id = $_POST['update_id'];
-        $stmt = $conn->prepare("UPDATE projects SET title=?, description=?, objectives=?, deadline=?, status=? WHERE project_id=?");
-        $stmt->execute([
-            $_POST['title'], $_POST['description'], $_POST['objectives'], $_POST['deadline'], $_POST['status'], $update_id
-        ]);
+    $message = $projectManager->updateProject([
+        'title' => $_POST['title'],
+        'description' => $_POST['description'],
+        'objectives' => $_POST['objectives'],
+        'deadline' => $_POST['deadline'],
+        'status' => $_POST['status'],
+        'update_id' => $_POST['update_id']
+    ]);
+    if ($message === true) {
         header("Location: manage_projects.php");
         exit;
-    } catch (PDOException $e) {
-        echo "خطأ في تعديل المشروع: " . $e->getMessage();
+    } else {
+        echo $message;
     }
 }
 
 // إضافة مشروع جديد
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_new'])) {
-    try {
-        $stmt = $conn->prepare("INSERT INTO projects (title, description, objectives, deadline, status, created_by) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $_POST['new_title'], $_POST['new_description'], $_POST['new_objectives'], $_POST['new_deadline'], $_POST['new_status'], $_SESSION['user_id']
-        ]);
+    $message = $projectManager->addProject([
+        'new_title' => $_POST['new_title'],
+        'new_description' => $_POST['new_description'],
+        'new_objectives' => $_POST['new_objectives'],
+        'new_deadline' => $_POST['new_deadline'],
+        'new_status' => $_POST['new_status'],
+        'created_by' => $_SESSION['user_id']
+    ]);
+    if ($message === true) {
         header("Location: manage_projects.php");
         exit;
-    } catch (PDOException $e) {
-        echo "خطأ في إضافة المشروع: " . $e->getMessage();
+    } else {
+        echo $message;
     }
 }
 
-// جلب المشاريع
-try {
-    $stmt = $conn->prepare("SELECT * FROM projects");
-    $stmt->execute();
-    $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "خطأ في جلب المشاريع: " . $e->getMessage();
-}
+$projects = $projectManager->getProjects();
 ?>
 
 <h2>إدارة المشاريع</h2>
@@ -72,6 +127,9 @@ try {
     <li><a href="manage_projects.php">إدارة المشاريع</a></li>
     <li><a href="manage_tasks.php">إدارة المهام</a></li>
     <li><a href="manage_roles.php">إدارة الأدوار والصلاحيات</a></li>
+    <li><a href="manage_votes.php">ادارة التصويتات</a></li>
+    <li><a href="manage_notifications.php">الإشعارات</a></li>
+    <li><a href="../Auth/out.php" onclick="return confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟');">🔓 تسجيل الخروج</a></li>
 </ul>
 
 <form method="post">
@@ -110,10 +168,12 @@ try {
                 </td>
                 <td>
                     <input type="hidden" name="update_id" value="<?= $proj['project_id'] ?>">
-                    <button type="submit">💾 حفظ</button>
-                    <a href="?delete=<?= $proj['project_id'] ?>" onclick="return confirm('هل أنت متأكد من الحذف؟')">🗑 حذف</a>
+                    <button type="submit">💾 تحديث</button>
                 </td>
             </form>
+            <td>
+                <a href="?delete=<?= $proj['project_id'] ?>" onclick="return confirm('⚠️ لا يمكن التراجع. هل أنت متأكد من الحذف؟')">🗑 حذف</a>
+            </td>
         </tr>
         <?php endforeach; ?>
     <?php else: ?>

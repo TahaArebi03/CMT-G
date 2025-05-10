@@ -6,45 +6,69 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 'مسؤول') {
 }
 
 require_once "../Config/connect.php";
-$db = new Connect();
-$conn = $db->conn;
 
-// إنشاء مشروع جديد
+class ProjectManager {
+    private $conn;
+    private $user_id;
+
+    public function __construct($db, $user_id) {
+        $this->conn = $db->conn;
+        $this->user_id = $user_id;
+    }
+
+    // إنشاء مشروع جديد
+    public function createProject($title, $description, $objectives, $deadline) {
+        try {
+            $stmt = $this->conn->prepare("INSERT INTO projects (title, description, objectives, deadline, status, created_by) VALUES (?, ?, ?, ?, 'نشط', ?)");
+            $stmt->execute([$title, $description, $objectives, $deadline, $this->user_id]);
+        } catch (PDOException $e) {
+            echo "<p style='color:red;'>خطأ في إنشاء المشروع: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // أرشفة مشروع
+    public function archiveProject($project_id) {
+        try {
+            $stmt = $this->conn->prepare("UPDATE projects SET status = 'مؤرشف' WHERE project_id = ?");
+            $stmt->execute([$project_id]);
+        } catch (PDOException $e) {
+            echo "<p style='color:red;'>خطأ في أرشفة المشروع: " . $e->getMessage() . "</p>";
+        }
+    }
+
+    // جلب المشاريع التي أنشأها المستخدم
+    public function getUserProjects() {
+        try {
+            $stmt = $this->conn->prepare("SELECT * FROM projects WHERE created_by = ?");
+            $stmt->execute([$this->user_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            echo "<p style='color:red;'>خطأ في جلب المشاريع: " . $e->getMessage() . "</p>";
+            return [];
+        }
+    }
+}
+
+$db = new Connect();
+$projectManager = new ProjectManager($db, $_SESSION['user_id']);
+
+// Handle POST request for creating a new project
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create'])) {
     $title = $_POST['title'];
     $description = $_POST['description'];
     $objectives = $_POST['objectives'];
     $deadline = $_POST['deadline'];
-    $created_by = $_SESSION['user_id'];
-
-    try {
-        $stmt = $conn->prepare("INSERT INTO projects (title, description, objectives, deadline, status, created_by) VALUES (?, ?, ?, ?, 'نشط', ?)");
-        $stmt->execute([$title, $description, $objectives, $deadline, $created_by]);
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في إنشاء المشروع: " . $e->getMessage() . "</p>";
-    }
+    $projectManager->createProject($title, $description, $objectives, $deadline);
 }
 
-// أرشفة مشروع
+// Handle GET request for archiving a project
 if (isset($_GET['archive'])) {
     $project_id = $_GET['archive'];
-    try {
-        $stmt = $conn->prepare("UPDATE projects SET status = 'مؤرشف' WHERE project_id = ?");
-        $stmt->execute([$project_id]);
-    } catch (PDOException $e) {
-        echo "<p style='color:red;'>خطأ في أرشفة المشروع: " . $e->getMessage() . "</p>";
-    }
+    $projectManager->archiveProject($project_id);
 }
 
-// جلب المشاريع التي أنشأها المستخدم
-try {
-    $stmt = $conn->prepare("SELECT * FROM projects WHERE created_by = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "<p style='color:red;'>خطأ في جلب المشاريع: " . $e->getMessage() . "</p>";
-    $projects = [];
-}
+// Fetch user projects
+$projects = $projectManager->getUserProjects();
 ?>
 
 <?php include "../Includes/header.php"; ?>

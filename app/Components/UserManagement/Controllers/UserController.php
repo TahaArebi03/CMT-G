@@ -1,5 +1,4 @@
 <?php
-// File: /app/Components/UserManagement/Controllers/UserController.php
 
 require_once '../../../../config/config.php';
 require_once __DIR__ . '/../Models/User.php';
@@ -27,12 +26,16 @@ class UserController
             // Attempt to authenticate
             $user = User::login($email, $password);
             if ($user) {
-                // Store user ID and role in session
-                $_SESSION['user_id'] = $user->getUserId();
-                $_SESSION['role']    = $user->getRole();
 
-                // Redirect to dashboard
-                header('Location: dashboard.php');
+                $_SESSION['user'] = $user;  // ← ضروري جدًا
+
+                if($user->getRole()=='student'){
+                    header('Location: ../Views/userDashboard');
+                }
+                elseif($user->getRole()=='admin'){
+                    header('Location: ../../ProjectManagnemt/Views/projectList.php');
+                }
+                
                 exit;
             } else {
                 $error = 'Invalid email or password.';
@@ -51,14 +54,15 @@ class UserController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name     = trim($_POST['name'] ?? '');
             $email    = trim($_POST['email'] ?? '');
+            $major    = trim($_POST['major'] ?? '');
             $password = trim($_POST['password'] ?? '');
             $role = trim($_POST['role'] ?? '');
             $language = trim($_POST['language'] ?? '');
-            var_dump($_POST);
             // Instantiate and populate User
             $user = new User();
             $user->setName($name);
             $user->setEmail($email);  
+            $user->setMajor($major);    
             $user->setPassword($password);
             $user->setRole($role);
             $user->setLanguage($language);
@@ -67,15 +71,23 @@ class UserController
             // defaults: language = 'en', focus_mode = false
             if($user->save()){
                 $_SESSION['user'] = $user;
-            }
-            if($user->getRole()=='student'){
+                if($user->getRole()=='student'){
 
-                header('Location: ../Views/userDashboard.php');
+                    header('Location: ../Views/userDashboard.php');
+                    exit();
+                }
+                if($user->getRole()=='admin'){
+                    
+                    header('Location: ../../ProjectManagement/Views/projectList.php');
+                    exit();
+    
+                }
             }
-            if($user->getRole()=='admin'){
-                header('Location: ../../projectManagement/Views/ProjectList.php');
-            }
+           
 
+    } else {
+        // عرض نموذج التسجيل
+        include __DIR__ . '/../Views/register.html';
     }
 }
 
@@ -90,55 +102,54 @@ class UserController
         exit;
     }
 
-    /**
-     * Show the user's dashboard.
-     */
-    public function dashboardAction()
-    {
-        if (empty($_SESSION['user_id'])) {
-            header('Location: login.php');
-            exit;
-        }
-        $user = User::findById($_SESSION['user_id']);
-        include __DIR__ . '/../Views/userDashboard.html';
-    }
+    // /**
+    //  * Show the user's dashboard.
+    //  */
+    // public function dashboardAction()
+    // {
+    //     if (empty($_SESSION['user']->getUserId)) {
+    //         header('Location: register.php');
+    //         exit;
+    //     }
+    //     $user = User::findById($_SESSION['user']->getUserId);
+    //     include __DIR__ . '/../Views/userDashboard.html';
+    // }
 
     /**
      * Show or process the profile page.
      */
-    public function profileAction()
-    {
-        if (empty($_SESSION['user_id'])) {
-            header('Location: login.php');
-            exit;
-        }
-        $user = User::findById($_SESSION['user_id']);
+    // public function profileAction()
+    // {
+    //     if (empty($_SESSION['user']->getUserId)) {
+    //         header('Location: register.php');
+    //         exit;
+    //     }
+    //     $user = User::findById($_SESSION['user']->getUserId);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Update user properties
-            $user->setName(trim($_POST['name'] ?? $user->getName()));
-            $user->setEmail(trim($_POST['email'] ?? $user->getEmail()));
-            if (!empty($_POST['password'])) {
-                $user->password = trim($_POST['password']); // save() will hash
-            }
-            $user->setLanguage($_POST['language'] ?? $user->getLanguage());
-            $user->setFocusMode(isset($_POST['focus_mode']));
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         // Update user properties
+    //         $user->setName(trim($_POST['name'] ?? $user->getName()));
+    //         $user->setEmail(trim($_POST['email'] ?? $user->getEmail()));
+    //         if (!empty($_POST['password'])) {
+    //             $user->setPassword(trim($_POST['password'])); // save() will hash
+    //         }
+    //         $user->setLanguage($_POST['language'] ?? $user->getLanguage());
+    //         $user->setFocusMode(isset($_POST['focus_mode']));
 
-            if ($user->save()) {
-                $success = 'Profile updated successfully.';
-            } else {
-                $error = 'Failed to update profile.';
-            }
-        }
+    //         if ($user->save()) {
+    //             $success = 'Profile updated successfully.';
+    //         } else {
+    //             $error = 'Failed to update profile.';
+    //         }
+    //     }
 
-        include __DIR__ . '/../Views/profile.html';
-    }
+    //     include __DIR__ . '/../Views/profile.html';
+    // }
 }
 
 // Router-like dispatch (simple)
 $controller = new UserController();
 $action     = $_GET['action'] ?? 'login';
-var_dump($_GET);
 switch ($action) {
     
     case 'login':
@@ -150,12 +161,12 @@ switch ($action) {
     case 'logout':
         $controller->logoutAction();
         break;
-    case 'dashboard':
-        $controller->dashboardAction();
-        break;
-    case 'profile':
-        $controller->profileAction();
-        break;
+    // case 'dashboard':
+    //     $controller->dashboardAction();
+    //     break;
+    // case 'profile':
+    //     $controller->profileAction();
+    //     break;
     default:
         header('HTTP/1.0 404 Not Found');
         echo 'Page not found';

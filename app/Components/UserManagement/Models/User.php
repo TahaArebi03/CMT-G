@@ -5,18 +5,19 @@ class User {
     private $userId;
     private $name;
     private $email;
-    private $password;    // ستحتوي دائماً على النص المُشفر
+    private $password; // مشفرة
     private $role;
     private $language;
-    private $focus_mode;  // boolean
-    private $project_id;
-    public function __construct() {
-        // تظل البيانات فارغة إلى أن تُحمَّل من DB أو يضبطها setter
-    }
+    private $major;
+    private $projectId;
+
+    public function __construct() {}
 
     // ——— Getters & Setters ———
 
     public function getUserId()   { return $this->userId; }
+    public function setUserId($id) { $this->userId = $id; }
+    public function getPassword() { return $this->password; }
     public function getName()     { return $this->name; }
     public function setName($n)   { $this->name = $n; }
 
@@ -26,24 +27,24 @@ class User {
     public function getRole()     { return $this->role; }
     public function setRole($r)   { $this->role = $r; }
 
-    public function getLanguage()      { return $this->language; }
-    public function setLanguage($l)    { $this->language = $l; }
+    public function getLanguage()     { return $this->language; }
+    public function setLanguage($l)   { $this->language = $l; }
 
-    public function isFocusMode()      { return $this->focus_mode; }
-    public function setFocusMode($f)   { $this->focus_mode = (bool)$f; }
+    public function getMajor()       { return $this->major; }
+    public function setMajor($m)     { $this->major = $m; }
 
-    public function getProjectId()      { return $this->project_id; }
-    public function setProjectId($p)   { $this->project_id = $p; }
+    public function getProjectId()   { return $this->projectId; }
+    public function setProjectId($p) { $this->projectId = $p; }
 
     /**
-     * يشفر كلمة المرور ويخزنها
+     * تشفير كلمة المرور
      */
     public function setPassword(string $plainPassword): void {
         $this->password = password_hash($plainPassword, PASSWORD_BCRYPT);
     }
 
     /**
-     * حفظ المستخدم (Insert أو Update)
+     * حفظ المستخدم (تسجيل أو تحديث)
      */
     public function save(): bool {
         $db  = new Connect();
@@ -53,7 +54,7 @@ class User {
             // تحديث
             $stmt = $pdo->prepare(
               "UPDATE users
-               SET name = ?, email = ?, password = ?, role = ?, language = ?, focus_mode = ?, project_id = ?
+               SET name = ?, email = ?, password = ?, role = ?, language = ?, project_id = ?
                WHERE user_id = ?"
             );
             return $stmt->execute([
@@ -62,14 +63,14 @@ class User {
                 $this->password,
                 $this->role,
                 $this->language,
-                (int)$this->focus_mode,
-                $this->project_id
+                $this->projectId,
+                $this->userId
             ]);
         } else {
-            // إدراج جديد
+            // إدخال جديد
             $stmt = $pdo->prepare(
-              "INSERT INTO users (name, email, password, role, language, focus_mode, project_id)
-               VALUES (?, ?, ?, ?, ?, ?, ?)"
+              "INSERT INTO users (name, email, password, role, language, project_id)
+               VALUES (?, ?, ?, ?, ?, ?)"
             );
             $ok = $stmt->execute([
                 $this->name,
@@ -77,8 +78,7 @@ class User {
                 $this->password,
                 $this->role,
                 $this->language,
-                (int)$this->focus_mode,
-                $this->project_id
+                $this->projectId
             ]);
             if ($ok) {
                 $this->userId = $pdo->lastInsertId();
@@ -88,7 +88,7 @@ class User {
     }
 
     /**
-     * محاولة تسجيل الدخول
+     * تسجيل الدخول
      */
     public static function login(string $email, string $password): ?User {
         $user = self::findByEmail($email);
@@ -113,7 +113,7 @@ class User {
         $u->password   = $row['password'];
         $u->role       = $row['role'];
         $u->language   = $row['language'];
-        $u->focus_mode = (bool)$row['focus_mode'];
+        $u->projectId  = $row['project_id'];
         return $u;
     }
 
@@ -132,18 +132,18 @@ class User {
         $u->password   = $row['password'];
         $u->role       = $row['role'];
         $u->language   = $row['language'];
-        $u->focus_mode = (bool)$row['focus_mode'];
+        $u->projectId  = $row['project_id']; 
         return $u;
     }
 
     public function getUserInfo(): array {
         return [
-            'userId'     => $this->userId,
+            'user_id'    => $this->userId,
             'name'       => $this->name,
             'email'      => $this->email,
             'role'       => $this->role,
             'language'   => $this->language,
-            'focus_mode' => $this->focus_mode
+            'project_id' => $this->projectId
         ];
     }
 }

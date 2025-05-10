@@ -1,9 +1,10 @@
 <?php
-// File: /app/Components/ProjectManagement/Controllers/ProjectController.php
+
 
 require_once __DIR__ . '/../../../../config/config.php';
 require_once __DIR__ . '/../Models/Project.php';
 require_once __DIR__ . '/../Models/ProjectMember.php';
+require_once __DIR__ . '/../../UserManagement/Models/User.php';
 
 class ProjectController
 {
@@ -19,13 +20,17 @@ class ProjectController
      */
     public function listAction()
     {
-        $db    = new Connect();
-        $pdo   = $db->conn;
-        $project_id = $_SESSION['user']->getProjectId();
-        $stmt  = $pdo->query("SELECT * FROM projects where project_id = $project_id");
-        $project = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // عرض الـ view
-        include __DIR__ . '/../Views/projectList.php';
+        $project_id = intval($_GET['id'] ?? 0);
+        $project= Project::findById($project_id);
+        if ($project) {
+            // عرض الـ view
+            include __DIR__ . '/../Views/projectList.php';
+            exit;
+        } else {
+            header('Location: ProjectController.php?action=create');
+            exit;
+
+        }
     }
 
     /**
@@ -41,9 +46,14 @@ class ProjectController
                 'deadline'    => trim($_POST['deadline'] ?? date('Y-m-d H:i:s')),
                 'status'      => trim($_POST['status'] ?? 'active')
             ];
-            $project = Project::createProject($data);
-            header('Location: ProjectController.php?action=list');
-            exit;
+            $project = Project::createProject($data); 
+            if ($project) {
+                header('Location: ProjectController.php?action=list&id='. $project->getId());
+                exit;
+            } else {
+                echo "Failed to create project";
+            }
+          
         } else {
             include __DIR__ . '/../Views/projectForm.html';
         }

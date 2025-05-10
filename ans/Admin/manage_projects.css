@@ -1,111 +1,29 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f6f8;
-    margin: 20px;
-    color: #333;
-    direction: rtl;
-}
-
-h2, h3 {
-    text-align: center;
-    color: #2c3e50;
-}
-
-form {
-    background-color: #fff;
-    padding: 15px;
-    margin-bottom: 30px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 500;
-}
-
-input[type="text"],
-input[type="date"],
-select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-button {
-    background-color: #007bff;
-    color: #fff;
-    padding: 8px 16px;
+/* ✅ زر حذف التصويت */
+.delete-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 14px;
+    background-color: #dc3545;
+    color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: #0056b3;
+.delete-btn:hover {
+    background-color: #c82333;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+/* ✅ صندوق التصويت */
+.vote-box {
     background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-th, td {
     border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
-
-th {
-    background-color: #eaeaea;
-    color: #333;
-}
-ul {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    list-style: none;
-    padding: 0;
-    margin-top: 40px;
-    flex-wrap: wrap;
-}
-
-ul li {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
-    width: 220px;
-    text-align: center;
-}
-
-ul li:hover {
-    transform: translateY(-5px);
-    background-color: #f0f8ff;
-}
-
-ul li a {
-    display: block;
-    padding: 18px 25px;
-    text-decoration: none;
-    font-size: 17px;
-    font-weight: bold;
-    color: #007bff;
-}
-
-ul li a:hover {
-    color: #0056b3;
-    text-decoration: underline;
-}
-

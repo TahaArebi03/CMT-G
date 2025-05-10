@@ -1,20 +1,30 @@
-<?php  
-require_once __DIR__ . '../../../UserManagment/Models/User.php';
-// createdBy = user_id ->session
-// getName for created project
-$creator= User::findById($project->getCreatedBy());
-
+<?php
+require_once __DIR__ . '/../../../../config/config.php';
+require_once __DIR__ . '/../Models/Project.php';
+require_once __DIR__ . '/../../UserManagement/Models/StudentUser.php';
+require_once __DIR__ . '/../../UserManagement/Models/User.php';
+require_once __DIR__ . '/../../TaskManagement/Models/Task.php';
+require_once __DIR__ . '/../Models/ProjectMember.php';
 
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
+
 <head>
   <meta charset="UTF-8">
   <title>Project Details | <?= htmlspecialchars($project->getTitle()) ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="projectDetails.css">
+  <link rel="stylesheet" href="../../../../public/css/projectDetails.css">
+  
 </head>
+
+
 <body>
+<div class="tabs">
+  <a href="#">تفاصيل المشروع</a>
+  <a href="../Controllers/ProjectMemberController.php?action=list&project_id= <?= $project->getId() ?>">الأعضاء</a>
+  <a href="../../TaskManagement/Views/projectTask.php?project_id=<?= $project->getId() ?>">المهام</a>
+</div>
   <div class="pd-container">
     <h1>🚀 <?= htmlspecialchars($project->getTitle()) ?></h1>
     <div class="pd-info">
@@ -33,12 +43,10 @@ $creator= User::findById($project->getCreatedBy());
           <?= ucfirst($st) ?>
         </span>
       </p>
-      <p><strong>Created By:</strong>
-        <?= htmlspecialchars($creator?->getName() ?? 'Unknown') ?>
-      </p>
+   
     </div>
     <a href="ProjectController.php?action=edit&id=<?= $project->getId() ?>"
        class="btn edit">✏️ Edit Project</a>
   </div>
-</body>
-</html>
+
+  

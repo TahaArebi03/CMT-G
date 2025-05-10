@@ -1,9 +1,11 @@
 <?php
-// File: /app/Components/ProjectManagement/Controllers/ProjectMemberController.php
+
 
 require_once __DIR__ . '/../../../../config/config.php';
 require_once __DIR__ . '/../Models/ProjectMember.php';
 require_once __DIR__ . '/../Models/Project.php';
+require_once __DIR__ . '../../../UserManagement/Models/StudentUser.php';
+
 
 class ProjectMemberController
 {
@@ -19,55 +21,78 @@ class ProjectMemberController
      */
     public function listAction()
     {
-        $projectId = intval($_GET['project_id'] ?? 0);
-        if (!$projectId) {
+        $project_id = intval($_GET['project_id'] ?? 0);
+        if (empty($project_id)) {
             header('Location: ProjectController.php?action=list');
             exit;
         }
-        $members = ProjectMember::findByProjectId($projectId);
-        include __DIR__ . '/../Views/memberList.html';
+        $members = ProjectMember::findByProjectId($project_id);
+        include __DIR__ . '/../Views/viewMembers.php';
+
     }
 
     /**
      * إضافة عضو جديد إلى المشروع
      */
-    public function addAction()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $member = new ProjectMember();
-            $member->setProjectId(intval($_POST['project_id']));
-            $member->setUserId(intval($_POST['user_id']));
-            $member->setRoleInProject(trim($_POST['role_in_project'] ?? 'member'));
-            $member->save();
-            header("Location: ProjectMemberController.php?action=list&project_id={$member->getProjectId()}");
-            exit;
-        } else {
-            include __DIR__ . '/../Views/memberForm.html';
-        }
+    public function addAction(){
+    // فقط الطلاب الذين ليس لهم مشروع مرتبط
+    $students = StudentUser::findAllStudents();
+    $project_id = intval($_GET['project_id'] ?? 0);
+    
+    if (!$project_id) {
+        header('Location: ProjectController.php?action=list');
+        exit;
     }
+
+    include __DIR__ . '/../Views/addMemberForm.php';
+}
+    
+    
+        /**
+        * حفظ عضو جديد في المشروع
+        */
+        public function saveAction()
+        {
+            $project_id = intval($_POST['project_id']);
+            $user_id = intval($_POST['user_id']);
+            $role_in_project = trim($_POST['role_in_project'] ?? '');
+        
+            if ($project_id && $user_id) {
+                $db = new Connect();
+                $pdo = $db->conn;
+                
+                // تحديث المشروع للطالب
+                $stmt = $pdo->prepare("UPDATE users SET project_id = ?, role_in_project = ? WHERE user_id = ?");
+                $stmt->execute([$project_id, $role_in_project, $user_id]);
+
+            }
+        
+            header("Location: ../Controllers/ProjectController.php?action=list&project_id=$project_id");
+            exit;
+        }
+
+
 
     /**
      * تعديل دور عضو في المشروع
      */
     public function editAction()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $member = new ProjectMember();
-            $member->setProjectId(intval($_POST['project_id']));
-            $member->setUserId(intval($_POST['user_id']));
-            $member->updateRole(trim($_POST['role_in_project']));
-            header("Location: ProjectMemberController.php?action=list&project_id={$member->getProjectId()}");
-            exit;
-        } else {
-            // نموذج التعديل يمكن أن يكون نفسه memberForm.html مع حقول معبأة
-            include __DIR__ . '/../Views/memberForm.html';
-        }
+        // if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        //     $member = new ProjectMember();
+        //     $member->setProjectId(intval($_POST['project_id']));
+        //     $member->setUserId(intval($_POST['user_id']));
+        //     $member->updateRole(trim($_POST['role_in_project']));
+        //     header("Location: ProjectMemberController.php?action=list&project_id={$member->getProjectId()}");
+        //     exit;
+        // } else {
+
+        //     include __DIR__ . '/../Views/addMemberForm.html';
+        // }
     }
 }
 
-/**
- * Router-like dispatch
- */
+
 $pmController = new ProjectMemberController();
 $action       = $_GET['action'] ?? 'list';
 
@@ -77,6 +102,9 @@ switch ($action) {
         break;
     case 'edit':
         $pmController->editAction();
+        break;
+    case 'save':
+        $pmController->saveAction();
         break;
     case 'list':
     default:
