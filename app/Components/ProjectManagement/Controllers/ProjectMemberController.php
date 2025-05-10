@@ -67,7 +67,7 @@ class ProjectMemberController
 
             }
         
-            header("Location: ../Controllers/ProjectMemberController.php?action=list&project_id=$project_id");
+            header("Location: ../Controllers/ProjectController.php?action=list&project_id=$project_id");
             exit;
         }
 

@@ -13,7 +13,7 @@
       <p>Join us by filling the information below</p>
     </div>
 
-    <form method="POST" action="../Controllers/UserController.php?action=register">
+    <form method="POST" action="../Controllers/AuthController.php?action=register">
       <div class="input-group">
         <span class="input-icon">👤</span>
         <input type="text" name="name" placeholder="Full Name" required>
@@ -58,7 +58,17 @@
           <label for="english">English</label>
         </div>
       </div>
-
+      <div class="major-select">
+        <h4>Select Your Major</h4>
+        <select name="major" required>
+          <option value="" disabled selected>Select your major</option>
+          <option value="computer_science">Computer Science</option>
+          <option value="information_technology">Information Technology</option>
+          <option value="software_engineering">Software Engineering</option>
+          <option value="data_science">Data Science</option>
+          <option value="networking">Networking</option>
+          <option value="cyber_security">Cyber Security</option>
+      </div>
       <button type="submit" class="register-btn">
         <span>Register</span>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

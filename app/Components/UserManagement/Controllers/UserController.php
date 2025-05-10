@@ -54,6 +54,7 @@ class UserController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $name     = trim($_POST['name'] ?? '');
             $email    = trim($_POST['email'] ?? '');
+            $major    = trim($_POST['major'] ?? '');
             $password = trim($_POST['password'] ?? '');
             $role = trim($_POST['role'] ?? '');
             $language = trim($_POST['language'] ?? '');
@@ -61,6 +62,7 @@ class UserController
             $user = new User();
             $user->setName($name);
             $user->setEmail($email);  
+            $user->setMajor($major);    
             $user->setPassword($password);
             $user->setRole($role);
             $user->setLanguage($language);

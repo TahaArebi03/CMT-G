@@ -15,12 +15,13 @@ require_once __DIR__ . '/../Models/ProjectMember.php';
   <title>Project Details | <?= htmlspecialchars($project->getTitle()) ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../../../../public/css/projectDetails.css">
+  
 </head>
 
 
 <body>
 <div class="tabs">
-  <a href="projectDetails.php?id=<?= $project->getId() ?>">تفاصيل المشروع</a>
+  <a href="#">تفاصيل المشروع</a>
   <a href="../Controllers/ProjectMemberController.php?action=list&project_id= <?= $project->getId() ?>">الأعضاء</a>
   <a href="../../TaskManagement/Views/projectTask.php?project_id=<?= $project->getId() ?>">المهام</a>
 </div>
