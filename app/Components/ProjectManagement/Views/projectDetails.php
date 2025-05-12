@@ -23,7 +23,7 @@ require_once __DIR__ . '/../Models/ProjectMember.php';
 <div class="tabs">
   <a href="#">تفاصيل المشروع</a>
   <a href="../Controllers/ProjectMemberController.php?action=list&project_id= <?= $project->getId() ?>">الأعضاء</a>
-  <a href="../../TaskManagement/Views/projectTask.php?project_id=<?= $project->getId() ?>">المهام</a>
+  <a href="../../TaskManagement/Controllers/TaskController.php?action=list&project_id=<?= $project->getId() ?>">المهام</a>
 </div>
   <div class="pd-container">
     <h1>🚀 <?= htmlspecialchars($project->getTitle()) ?></h1>

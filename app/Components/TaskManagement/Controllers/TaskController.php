@@ -18,15 +18,15 @@ class TaskController
      */
     public function listAction()
     {
-        $projectId = intval($_GET['project_id'] ?? 0);
-        if (!$projectId) {
+        $project_id = intval($_GET['project_id'] ?? 0);
+        if (!$project_id) {
             // إذا لم يُحدد مشروع، نعيد إلى قائمة المشاريع
             header('Location: ../../ProjectManagement/Controllers/ProjectController.php?action=list');
             exit;
         }
 
         // جلب كل المهام للمشروع
-        $tasks  = Task::findByProjectId($projectId);
+        $tasks  = Task::findByProjectId($project_id);
 
         include __DIR__ . '/../Views/taskList.php';
     }
@@ -36,15 +36,15 @@ class TaskController
      */
     public function createAction()
     {
-        $projectId = intval($_GET['project_id'] ?? 0);
-        if (!$projectId) {
+        $project_id = intval($_GET['project_id'] ?? 0);
+        if (!$project_id) {
             header('Location: ../../ProjectManagement/Controllers/ProjectController.php?action=list');
             exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $t = new Task();
-            $t->setProjectId($projectId);
+            $t->setProjectId($project_id);
             $t->setTitle(trim($_POST['title'] ?? ''));
             $t->setDescription(trim($_POST['description'] ?? ''));
             $t->setAssignedTo(intval($_POST['assigned_to'] ?? 0) ?: null);
@@ -52,12 +52,12 @@ class TaskController
             $t->setPriority(trim($_POST['priority'] ?? 'medium'));
             $t->setDeadline(trim($_POST['deadline'] ?? date('Y-m-d H:i:s')));
             $t->save();
-
-            header("Location: TaskController.php?action=list&project_id={$projectId}");
+            
+            header("Location: TaskController.php?action=list&project_id={$project_id}");
             exit;
         } else {
             // جلب قائمة الطلاب للاختيار من الفورم
-            $students  = StudentUser::findByProject($projectId);
+            $students  = StudentUser::findByProject($project_id);
             include __DIR__ . '/../Views/taskForm.php';
         }
     }

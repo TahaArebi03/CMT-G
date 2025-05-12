@@ -162,13 +162,6 @@
     </select>
   </div>
   
-  <div class="form-group">
-    <label for="role_in_project">الدور:</label>
-    <select name="role_in_project" id="role_in_project" required>
-      <option value="member">عضو</option>
-      <option value="admin">قائد فريق</option>
-    </select>
-  </div>
 
   <div class="form-actions">
     <button type="submit" class="btn-submit">

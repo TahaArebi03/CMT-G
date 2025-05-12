@@ -53,21 +53,20 @@ class ProjectMemberController
         */
         public function saveAction()
         {
-            $project_id = intval($_POST['project_id']);
+            $project_id = intval($_GET['project_id']);
             $user_id = intval($_POST['user_id']);
-            $role_in_project = trim($_POST['role_in_project'] ?? '');
         
             if ($project_id && $user_id) {
                 $db = new Connect();
                 $pdo = $db->conn;
                 
                 // تحديث المشروع للطالب
-                $stmt = $pdo->prepare("UPDATE users SET project_id = ?, role_in_project = ? WHERE user_id = ?");
-                $stmt->execute([$project_id, $role_in_project, $user_id]);
+                $stmt = $pdo->prepare("UPDATE users SET project_id = ? WHERE user_id = ?");
+                $stmt->execute([$project_id, $user_id]);
 
             }
-        
-            header("Location: ../Controllers/ProjectController.php?action=list&project_id=$project_id");
+
+            header("Location: ProjectMemberController.php?action=list&project_id=$project_id");
             exit;
         }
 

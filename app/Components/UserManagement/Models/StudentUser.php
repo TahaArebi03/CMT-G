@@ -38,7 +38,7 @@ class StudentUser extends User {
         $pdo = $db->conn;
         $sql = "
           SELECT *
-          FROM users WHERE role = 'student' and project_id = ?;
+          FROM users WHERE role = 'Student' and project_id = ?;
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$projectId]);
@@ -50,7 +50,7 @@ class StudentUser extends User {
             $s->setName($row['name']);
             $s->setMajor($row['major']);
             $s->setProjectId($row['project_id']?? null);
-            $students=$s;
+            $students[] = $s;
         }
         return $students;
     }

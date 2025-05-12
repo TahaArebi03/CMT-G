@@ -16,11 +16,12 @@ class AuthController {
 
             if ($user) {
                 // التحقق من نوع المستخدم وتوجيهه للواجهة المناسبة
-                if ($user['role'] === 'student') {
-                    header('Location: ../../StudentManagement/Views/userDashboard.php');
-                } elseif ($user['role'] === 'admin') {
+                if ($user['role'] === 'Student') {
+                    header('Location: ../../UserManagement/Views/userDashboard.php');
+                } elseif ($user['role'] === 'Admin') {
                     header('Location: ../../ProjectManagement/Views/projectList.php');
                 }
+
                 exit;
             } else {
                 $error = "البريد الإلكتروني أو كلمة المرور غير صحيحة";

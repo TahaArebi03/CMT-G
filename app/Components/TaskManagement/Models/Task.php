@@ -82,14 +82,14 @@ class Task
      * جلب كل المهام الخاصة بمشروع معيّن
      * @return Task[]
      */
-    public static function findByProjectId(int $projectId): array
+    public static function findByProjectId(int $project_id): array
     {
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare(
           "SELECT * FROM tasks WHERE project_id = ? ORDER BY deadline ASC"
         );
-        $stmt->execute([$projectId]);
+        $stmt->execute([$project_id]);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $tasks = [];
