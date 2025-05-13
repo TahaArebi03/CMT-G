@@ -48,6 +48,10 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
             <a href="../Controllers/TaskController.php?action=edit&id=<?= $t->getTaskId() ?>
                       &project_id=<?= $project_id ?>">تفاصيل</a>
           </td>
+          <td>
+            <a href="../Controllers/CommentController.php?action=list&id=<?=$t->getTaskId()?>
+                     &user_id=<?=$t->getAssignedTo()?>">تعليقات</a>
+          </td>
         </tr>
       <?php endforeach; ?>
       </tbody>
