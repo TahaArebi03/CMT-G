@@ -48,6 +48,7 @@ class StudentUser extends User {
         foreach ($rows as $row) {
             $s= new StudentUser();
             $s->setName($row['name']);
+            $s->setUserId($row['user_id']);
             $s->setMajor($row['major']);
             $s->setProjectId($row['project_id']?? null);
             $students[] = $s;
