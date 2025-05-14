@@ -49,7 +49,7 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
                       &project_id=<?= $project_id ?>">تفاصيل</a>
           </td>
           <td>
-            <a href="../Controllers/CommentController.php?action=list&id=<?=$t->getTaskId()?>
+            <a href="../Controllers/CommentController.php?action=list&task_id=<?=$t->getTaskId()?>
                      &user_id=<?=$t->getAssignedTo()?>">تعليقات</a>
           </td>
         </tr>

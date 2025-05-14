@@ -18,28 +18,31 @@ class CommentController
     {
         $task_id = $_GET['task_id'] ?? 0;
         $user_id = $_GET['user_id'] ?? 0;
+        // $user_name = $_SESSION['user']->getName();
         if(!$task_id) {
             echo "لا يمكن عرض التعليقات لمهمة غير موجودة.";
             return;
         }
         // جلب التعليقات الخاصة بالمهمة
         $comments = Comment::getCommentsByTaskId($task_id);
-        require_once __DIR__ . '/../Views/comments/commentsList.php';
+        include __DIR__ . '/../Views/commentsList.php';
     }
 
     // إنشاء تعليق جديد
     public function create()
     {
         $task_id = $_GET['task_id'] ?? 0;
+        $user_id = $_GET['user_id'] ?? 0;
         if(!$task_id) {
             echo "لا يمكن إضافة تعليق لمهمة غير موجودة.";
             return;
         }
+        
         if($_SERVER["REQUEST_METHOD"] == "POST") {
             $comment = new Comment();
             $comment->setTaskId($task_id);
-            $comment->setUserId($_POST['user_id']);
-            $comment->setCommentText($_POST['content']);
+            $comment->setUserId($user_id);
+            $comment->setContent($_POST['content']);
             $comment->setCreatedAt(date('Y-m-d H:i:s'));
             if ($comment->save()) {
                 header("Location: CommentController.php?action=list&task_id={$task_id}");
@@ -47,7 +50,8 @@ class CommentController
                 echo "حدث خطأ أثناء إضافة التعليق.";
             }
         }
-        include __DIR__ . '/../Views/commentsForm.php';
+        include __DIR__ . '/../Views/commentForm.php';
+        
     }
 
     // تحديث تعليق موجود

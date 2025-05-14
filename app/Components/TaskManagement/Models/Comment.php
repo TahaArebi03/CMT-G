@@ -1,10 +1,10 @@
 <?php
-require '../../../../config/config.php';
+require_once __DIR__ . '/../../../../config/config.php';
 class Comment{
     private $comment_id;
     private $task_id;
     private $user_id;
-    private $comment_text;
+    private $content;
     private $created_at;
     // public function __construct(){
 
@@ -17,13 +17,13 @@ class Comment{
 
     public function getUserId(){return $this->user_id;}
 
-    public function getCommentText(){return $this->comment_text;}
+    public function getContent(){return $this->content;}
 
     public function getCreatedAt(){return $this->created_at;}
     public function setCommentId($id){$this->comment_id=$id;}
     public function setTaskId($id){$this->task_id=$id;}
     public function setUserId($id){$this->user_id=$id;}
-    public function setCommentText($text){$this->comment_text=$text;}
+    public function setContent($text){$this->content=$text;}
     public function setCreatedAt($date){$this->created_at=$date;}
 
     // ادراج وتحديث
@@ -31,31 +31,36 @@ class Comment{
     {
         $db  = new Connect();
         $pdo = $db->conn;
+        echo "Task ID: " . $this->task_id . "<br>";
+        echo "User ID: " . $this->user_id . "<br>";
+        echo "Content: " . $this->content . "<br>";
+        echo "Created At: " . $this->created_at . "<br>";
+
 
         if ($this->comment_id) {
             // تحديث
             $stmt = $pdo->prepare(
               "UPDATE comments
-               SET task_id = ?, user_id = ?, comment_text = ?, created_at = ?
+               SET task_id = ?, user_id = ?, content = ?, created_at = ?
                WHERE comment_id = ?"
             );
             return $stmt->execute([
                 $this->task_id,
                 $this->user_id,
-                $this->comment_text,
+                $this->content,
                 $this->created_at,
                 $this->comment_id
             ]);
         } else {
             // إدراج جديد
             $stmt = $pdo->prepare(
-              "INSERT INTO comments (task_id, user_id, comment_text, created_at)
+              "INSERT INTO comments (task_id, user_id, content, created_at)
                VALUES (?, ?, ?, ?)"
             );
             $ok= $stmt->execute([
                 $this->task_id,
                 $this->user_id,
-                $this->comment_text,
+                $this->content,
                 $this->created_at
             ]);
             if($ok){
@@ -65,12 +70,22 @@ class Comment{
         }
 }
     // جلب جميع التعليقات في المهمة
-    public function getCommentsByTaskId($task_id){
+    public static function getCommentsByTaskId($task_id){
         $db = new Connect();
         $pdo = $db->conn;
         $stmt= $pdo->prepare("SELECT * FROM comments WHERE task_id=?");
         $stmt->execute([$task_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $comments = [];
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            $comment = new Comment();
+            $comment->setCommentId($row['comment_id']);
+            $comment->setTaskId($row['task_id']);
+            $comment->setUserId($row['user_id']);
+            $comment->setContent($row['content']);
+            $comment->setCreatedAt($row['created_at']);
+            $comments[] = $comment;
+        }
+        return $comments;
     }
 
 
