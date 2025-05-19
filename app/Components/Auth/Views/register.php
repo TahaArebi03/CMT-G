@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
   <div class="register-container">
     <div class="register-header">
       <h2>Create Account</h2>
@@ -15,6 +16,12 @@
     </div>
 
     <form method="POST" action="../Controllers/AuthController.php?action=register">
+      <?php if (!empty($error)): ?>
+        <div class="error-message">
+          <?php echo $error; ?>
+        </div>
+      <?php endif; ?>
+
       <div class="input-group">
         <span class="input-icon">👤</span>
         <input type="text" name="name" placeholder="Full Name" required>
@@ -22,7 +29,9 @@
 
       <div class="input-group">
         <span class="input-icon">✉️</span>
+
         <input type="email" name="email" placeholder="Email Address" required>
+
       </div>
 
       <div class="input-group">

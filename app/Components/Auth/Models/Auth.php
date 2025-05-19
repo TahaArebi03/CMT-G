@@ -18,15 +18,30 @@ class Auth {
         
         return null;
     }
+    public static function emailExists($email) {
+        $db = new Connect();
+        $pdo = $db->conn;
+
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
     public static function register($name, $email, $password, $role, $language,$major) {
         $db = new Connect();
         $pdo = $db->conn;
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-        // إدخال المستخدم في قاعدة البيانات
-        $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, language, major) VALUES (?, ?, ?, ?, ?, ?)");
-        return $stmt->execute([$name, $email, $hashedPassword, $role, $language, $major]);
+        // تحقق مما إذا كان البريد الإلكتروني موجودًا بالفعل
+        if (self::emailExists($email)==null) {
+            // إدخال المستخدم في قاعدة البيانات
+            $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, language, major) VALUES (?, ?, ?, ?, ?, ?)");
+            return $stmt->execute([$name, $email, $hashedPassword, $role, $language, $major]);
+        } else {
+            
+            // إذا كان البريد الإلكتروني موجودًا 
+            return false;
+        }
     }
 }
 ?>

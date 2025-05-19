@@ -29,7 +29,7 @@
       </button>
 
       <div class="register-link">
-        Don't have an account? <a href="register.html">Create one here</a>
+        Don't have an account? <a href="register.php">Create one here</a>
       </div>
     </form>
   </div>

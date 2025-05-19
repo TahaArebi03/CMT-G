@@ -41,6 +41,13 @@ class AuthController {
             $language = $_POST['language'] ?? 'ar';
             $major = $_POST['major'] ?? '';
 
+            // تحقق من صحة البيانات المدخلة
+            if (empty($name) || empty($email) || empty($password)) {
+                $error = "يرجى ملء جميع الحقول.";
+            } elseif (Auth::emailExists($email)) {
+                $error = "البريد الإلكتروني موجود بالفعل.";
+            } else {
+                // تسجيل المستخدم
             if (Auth::register($name, $email, $password, $role, $language, $major)) {
                 if ($role === 'student') {
                     header('Location: ../../UserManagement/Views/userDashboard.php');
@@ -56,6 +63,7 @@ class AuthController {
         
         include __DIR__ . '/../Views/register.php';
     }
+}   
     public function logoutAction() {
         // هنا يمكنك إضافة منطق تسجيل الخروج، مثل حذف الجلسة
         session_start();
