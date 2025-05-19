@@ -3,13 +3,19 @@
 <?php
 session_start();
 require_once "../config/connect.php";
+require_once "Commands/SendNotification_Command.php";
+
+
 $db = new Connect();
 $conn = $db->conn;
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
+// التحقق من الجلسة والصلاحيات
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق')) {
     header("Location: ../Auth/inout.php");
     exit;
 }
+
+$user_id = $_SESSION['user_id'];
 
 // جلب الطلاب
 try {
@@ -23,23 +29,21 @@ try {
 
 // إرسال الإشعار
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $message = trim($_POST['message']);
+    $message = $_POST['message'];
     $target = $_POST['target'];
 
     try {
+        $command = new SendNotification_Command($conn, $message);
+
         if ($target === 'all') {
-            foreach ($students as $student) {
-                $insert = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
-                $insert->execute([$student['user_id'], $message]);
-            }
+            $command->sendToAll($students);
         } else {
-            $insert = $conn->prepare("INSERT INTO notifications (user_id, message) VALUES (?, ?)");
-            $insert->execute([$target, $message]);
+            $command->sendToUser($target);
         }
 
-        echo "✅ تم إرسال الإشعار بنجاح.";
+        echo "<p style='color:green;'>✅ تم إرسال الإشعار بنجاح.</p>";
     } catch (PDOException $e) {
-        echo "❌ فشل في إرسال الإشعار: " . $e->getMessage();
+        echo "<p style='color:red;'>❌ فشل في إرسال الإشعار: " . $e->getMessage() . "</p>";
     }
 }
 ?>
@@ -50,8 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <li><a href="manage_projects.php">إدارة المشاريع</a></li>
     <li><a href="manage_tasks.php">إدارة المهام</a></li>
     <li><a href="manage_roles.php">إدارة الأدوار والصلاحيات</a></li>
-    <li><a href="manage_votes.php">ادارة التصويتات</a></li>
-    <li><a href="manage_notifications.php">الاشعارات</a></li>
+    <li><a href="manage_votes.php">إدارة التصويتات</a></li>
+    <li><a href="manage_notifications.php">الإشعارات</a></li>
     <li><a href="../Auth/out.php" onclick="return confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟');">🔓 تسجيل الخروج</a></li>
 </ul>
 

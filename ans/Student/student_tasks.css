@@ -178,3 +178,36 @@ form button:hover {
     cursor: pointer;
   }
   
+  .search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    background-color: #f0f4f8;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.search-form input[type="text"],
+.search-form input[type="date"] {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.search-form button {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #3c8dbc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-form button:hover {
+    background-color: #367fa9;
+}
