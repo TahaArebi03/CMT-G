@@ -14,6 +14,12 @@
     </div>
 
     <form method="POST" action="../Controllers/AuthController.php?action=login">
+      <?php if (!empty($error)): ?>
+    <div class="error-message">
+        <?= htmlspecialchars($error) ?>
+    </div>
+<?php endif; ?>
+
       <div class="input-group">
         <span class="input-icon">✉️</span>
         <input type="email" name="email" placeholder="Email Address" required>

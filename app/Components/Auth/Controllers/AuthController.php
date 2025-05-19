@@ -13,21 +13,21 @@ class AuthController {
             $password = trim($_POST['password']);
 
             $user = Auth::login($email, $password);
-
-            if ($user) {
+            // التحقق من البريد الإلكتروني
+            if (empty($user)) {
+                $error = "البريد الإلكتروني غير صحيحة.";
+            } elseif (!password_verify($password, $user['password'])) {
+                $error = "كلمة المرور غير صحيحة.";
+            } else {
                 // التحقق من نوع المستخدم وتوجيهه للواجهة المناسبة
                 if ($user['role'] === 'Student') {
                     header('Location: ../../UserManagement/Views/userDashboard.php');
                 } elseif ($user['role'] === 'Admin') {
                     header('Location: ../../ProjectManagement/Views/projectList.php');
                 }
-
-                exit;
-            } else {
-                $error = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
             }
         }
-        
+
         include __DIR__ . '/../Views/login.php';
     }
     public function registerAction() {

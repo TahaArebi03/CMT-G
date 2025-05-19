@@ -12,7 +12,7 @@ class Auth {
         
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user && password_verify($password, $user['password'])) {
+        if ($user) {
             return $user;
         }
         
@@ -38,7 +38,7 @@ class Auth {
             $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, language, major) VALUES (?, ?, ?, ?, ?, ?)");
             return $stmt->execute([$name, $email, $hashedPassword, $role, $language, $major]);
         } else {
-            
+
             // إذا كان البريد الإلكتروني موجودًا 
             return false;
         }
