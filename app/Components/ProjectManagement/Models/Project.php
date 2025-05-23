@@ -73,8 +73,10 @@ class Project
             ]);
             if ($ok) {
                 $this->project_id = $pdo->lastInsertId();
+                $stmt = $pdo->prepare( "UPDATE users SET project_id = ? WHERE user_id = ?");
+                $stmt->execute([$this->project_id, $_SESSION['user_id']]);
             }
-            
+
             return $ok;
         }
     }

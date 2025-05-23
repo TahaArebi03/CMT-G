@@ -36,10 +36,18 @@ class Auth {
         if (self::emailExists($email)==null) {
             // إدخال المستخدم في قاعدة البيانات
             $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role, language, major) VALUES (?, ?, ?, ?, ?, ?)");
-            return $stmt->execute([$name, $email, $hashedPassword, $role, $language, $major]);
+           $ok=$stmt->execute([$name, $email, $hashedPassword, $role, $language, $major]);
+
+           if ($ok) {
+               // تعيين معرف المستخدم
+               $user_id = $pdo->lastInsertId();
+               // تعيين معرف المستخدم في الجلسة
+               $_SESSION['user_id'] = $user_id;
+           }
+           return $ok;
         } else {
 
-            // إذا كان البريد الإلكتروني موجودًا 
+            // إذا كان البريد الإلكتروني موجودًا
             return false;
         }
     }

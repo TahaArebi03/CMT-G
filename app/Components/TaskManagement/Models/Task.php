@@ -131,4 +131,14 @@ class Task
         $t->deadline    = $row['deadline'];
         return $t;
     }
+
+    // تحديد اولويات المهام
+    public static function orderByPriority(array $tasks): array
+    {
+        usort($tasks, function ($a, $b) {
+            $order_priority = ['high' => 1, 'medium' => 2, 'low' => 3];
+            return $order_priority[$a->getPriority()] <=> $order_priority[$b->getPriority()];
+        });
+        return $tasks;
+    }
 }

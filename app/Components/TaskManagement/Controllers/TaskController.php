@@ -25,8 +25,9 @@ class TaskController
             exit;
         }
 
-        // جلب كل المهام للمشروع
-        $tasks  = Task::findByProjectId($project_id);
+        // جلب كل المهام للمشروع وفرزها حسب الأولوية
+        $tasks  = Task::orderByPriority(Task::findByProjectId($project_id));
+        
 
         include __DIR__ . '/../Views/taskList.php';
     }

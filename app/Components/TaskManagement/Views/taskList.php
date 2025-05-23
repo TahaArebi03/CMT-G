@@ -35,6 +35,7 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
       </thead>
       <tbody>
       <?php foreach ($tasks as $t): 
+      
         $assignee = $t->getAssignedTo()
           ? User::findById($t->getAssignedTo())->getName()
           : 'غير مخصّص';
@@ -44,6 +45,7 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
           <td><?= htmlspecialchars($assignee) ?></td>
           <td><?= htmlspecialchars(ucfirst($t->getStatus())) ?></td>
           <td><?= htmlspecialchars($t->getDeadline()) ?></td>
+          <td><?= htmlspecialchars($t->getPriority()) ?></td>
           <td>
             <a href="../Controllers/TaskController.php?action=edit&id=<?= $t->getTaskId() ?>
                       &project_id=<?= $project_id ?>">تفاصيل</a>
