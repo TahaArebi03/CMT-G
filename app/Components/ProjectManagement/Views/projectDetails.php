@@ -5,7 +5,6 @@ require_once __DIR__ . '/../../UserManagement/Models/StudentUser.php';
 require_once __DIR__ . '/../../UserManagement/Models/User.php';
 require_once __DIR__ . '/../../TaskManagement/Models/Task.php';
 require_once __DIR__ . '/../Models/ProjectMember.php';
-
 ?>
 <!DOCTYPE html>
 <html lang="ar">
@@ -24,6 +23,7 @@ require_once __DIR__ . '/../Models/ProjectMember.php';
   <a href="#">تفاصيل المشروع</a>
   <a href="../Controllers/ProjectMemberController.php?action=list&project_id= <?= $project->getId() ?>">الأعضاء</a>
   <a href="../../TaskManagement/Controllers/TaskController.php?action=list&project_id=<?= $project->getId() ?>">المهام</a>
+  <a href="../../Voting/Controllers/VoteController.php?action=list&project_id=<?= $project->getId() ?>">التصويتات</a>
 </div>
   <div class="pd-container">
     <h1>🚀 <?= htmlspecialchars($project->getTitle()) ?></h1>
@@ -45,6 +45,8 @@ require_once __DIR__ . '/../Models/ProjectMember.php';
       </p>
    
     </div>
+ 
+
     <a href="ProjectController.php?action=edit&id=<?= $project->getId() ?>"
        class="btn edit">✏️ Edit Project</a>
   </div>

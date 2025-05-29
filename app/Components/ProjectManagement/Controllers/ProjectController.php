@@ -20,17 +20,35 @@ class ProjectController
      */
     public function listAction()
     {
-        $project_id = intval($_GET['id'] ?? 0);
-        $project= Project::findById($project_id);
-        if ($project) {
-            // عرض الـ view
-            include __DIR__ . '/../Views/projectList.php';
-            exit;
-        } else {
-            header('Location: ProjectController.php?action=create');
-            exit;
+        // $project_id = intval($_GET['id'] ?? 0);
+        if (isset($_SESSION['user_id'])) {
 
+            $userId = $_SESSION['user_id'];
+            $user = User::findById($userId);
+            if ($user) {
+                $projectId = $user->getProjectId();
+                if ($projectId) {
+                    $project = Project::findById($projectId);
+                } else {
+                    $project = null;
+                }
+            } else {
+                $project = null;
+            }
+        } else {
+            $project = null;
         }
+        // if ($project) {
+        //     // عرض الـ view
+        //     include __DIR__ . '/../Views/projectList.php';      
+        //     exit;
+        // } else {
+        //     header('Location: ProjectController.php?action=create');
+        //     exit;
+
+        // }
+        include __DIR__ . '/../Views/projectList.php';
+        exit; 
     }
 
     /**
@@ -46,8 +64,10 @@ class ProjectController
                 'deadline'    => trim($_POST['deadline'] ?? date('Y-m-d H:i:s')),
                 'status'      => trim($_POST['status'] ?? 'active')
             ];
+
             $project = Project::createProject($data); 
             if ($project) {
+                
                 header('Location: ProjectController.php?action=list&id='. $project->getId());
                 exit;
             } else {
@@ -55,7 +75,7 @@ class ProjectController
             }
           
         } else {
-            include __DIR__ . '/../Views/projectForm.html';
+            include __DIR__ . '/../Views/projectForm.php';
         }
     }
 
@@ -65,12 +85,13 @@ class ProjectController
     public function viewAction()
     {
         //id -> projectList.php
-        $id = intval($_GET['id'] ?? 0);
-        if (!$id) {
+        $project_id = intval($_GET['id'] ?? 0);
+        if (!$project_id) {
             header('Location: ProjectController.php?action=list');
             exit;
         }
-        $project = Project::findById($id);
+        $project = Project::findById($project_id);
+        $user= User::findById($_SESSION['user_id'] ?? 0);
         include __DIR__ . '/../Views/projectDetails.php';
 
     }

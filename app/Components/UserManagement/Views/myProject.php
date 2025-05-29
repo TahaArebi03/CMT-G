@@ -8,14 +8,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Projects</title>
+  <title>My Project</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="myProjects.css">
 </head>
 <body>
   <div class="mp-container">
     <header>
-      <h1>🏷️ My Projects</h1>
+      <h1>🏷️ My Project</h1>
       <a href="UserController.php?action=dashboard" class="btn back">← Dashboard</a>
     </header>
 

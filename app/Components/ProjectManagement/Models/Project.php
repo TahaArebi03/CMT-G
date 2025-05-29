@@ -12,7 +12,12 @@ class Project
     private $deadline;    // string في شكل 'YYYY-MM-DD HH:MM:SS'
     private $status;      // 'active' أو 'archived'
 
-    public function __construct() {}
+    public function __construct() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+    }
 
     // ——— Getters & Setters ———
 
@@ -72,6 +77,8 @@ class Project
                 $this->status
             ]);
             if ($ok) {
+
+                
                 $this->project_id = $pdo->lastInsertId();
                 $stmt = $pdo->prepare( "UPDATE users SET project_id = ? WHERE user_id = ?");
                 $stmt->execute([$this->project_id, $_SESSION['user_id']]);

@@ -1,3 +1,6 @@
+<?php
+require __DIR__ . '../../../UserManagement/Controllers/UserController.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,13 +12,12 @@
 <body>
   <div class="dashboard-container">
     <header>
-      <h1>Welcome, User!</h1>
+      <h1>Welcome, <?php echo htmlspecialchars($user->getName); ?></h1>
       <p>Your dashboard at a glance</p>
     </header>
 
     <div class="dashboard-links">
-      <a href="#">📝 My Tasks</a>
-      <a href="myProject.php">📁 My Project</a>
+      <a href="../../ProjectManagement/Controllers/ProjectController.php?action=list">📁 My Project</a>
       <a href="#">👤 Profile</a>
       <a href="#">🚪 Logout</a>
     </div>

@@ -21,9 +21,15 @@ class Auth {
     public static function emailExists($email) {
         $db = new Connect();
         $pdo = $db->conn;
-
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
+        try {
+            // تحقق مما إذا كان البريد الإلكتروني موجودًا بالفعل
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+        } catch (PDOException $e) {
+            // في حالة حدوث خطأ في قاعدة البيانات
+            return null;
+        }
+        
         
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -42,6 +48,7 @@ class Auth {
                // تعيين معرف المستخدم
                $user_id = $pdo->lastInsertId();
                // تعيين معرف المستخدم في الجلسة
+               session_start();
                $_SESSION['user_id'] = $user_id;
            }
            return $ok;
