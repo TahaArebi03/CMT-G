@@ -18,14 +18,23 @@ class VoteResponse {
         $this->selected_option = $option;
     }
 
+    public function hasUserVoted($voteId, $userId) {
+        $db = new Connect();
+        $pdo = $db->conn;
+
+        $stmt = $pdo->prepare("SELECT * FROM vote_responses WHERE vote_id = ? AND user_id = ?");
+        $stmt->execute([$voteId, $userId]);
+        return $stmt->fetch() !== false;
+    }
+
     public function submit() {
         $db = new Connect();
         $pdo = $db->conn;
 
         // Check if already voted
-        $check = $pdo->prepare("SELECT * FROM vote_responses WHERE vote_id = ? AND user_id = ?");
-        $check->execute([$this->vote_id, $this->user_id]);
-        if ($check->fetch()) return false;
+        // $check = $pdo->prepare("SELECT * FROM vote_responses WHERE vote_id = ? AND user_id = ?");
+        // $check->execute([$this->vote_id, $this->user_id]);
+        // if ($check->fetch()) return false;
 
         // Submit response
         $stmt = $pdo->prepare("INSERT INTO vote_responses (vote_id, user_id, selected_option) VALUES (?, ?, ?)");

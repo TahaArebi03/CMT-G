@@ -5,12 +5,17 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
 
 class VoteController
 {
+    public function __construct()
+    {
+         if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
     public function listAction()
     {
         $project_id = intval($_GET['project_id'] ?? 0);
         $voteModel = new Vote();
         $votes = $voteModel->getAllVotesByProject($project_id);
-
         include __DIR__ . '/../Views/voteList.php';
     }
 
@@ -18,14 +23,14 @@ class VoteController
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $vote = new Vote();
-            $vote->setProjectId($_POST['project_id']);
+            $vote->setProjectId($_GET['project_id']);
             $vote->setQuestion($_POST['question']);
-            $vote->setOptions($_POST['options']);
             $vote->setStatus($_POST['status']);
-            $vote->setCreatedBy($_SESSION['user_id'] ?? 1); // مؤقتًا نستخدم 1
+            $vote->setCreatedBy($_SESSION['user_id']); 
 
             if ($vote->createVote()) {
-                header('Location: VoteController.php?action=list&project_id=' . $_POST['project_id']);
+                
+                header('Location: VoteController.php?action=list&project_id=' . $vote->getProjectId());
                 exit;
             } else {
                 echo "فشل في إنشاء التصويت";
@@ -41,25 +46,24 @@ class VoteController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response = new VoteResponse();
 
-            $voteId = $_POST['vote_id'];
-            $userId = $_SESSION['user_id'] ?? 1; // مؤقتًا
+            $voteId = $_GET['vote_id'];
+            $projectId = $_GET['project_id'] ?? 0;
+            $userId = $_SESSION['user_id']; 
             $option = $_POST['selected_option'];
-
-            if ($response->hasUserVoted($voteId, $userId)) {
-                echo "لقد قمت بالتصويت مسبقًا";
-                exit;
-            }
-
             $response->setVoteId($voteId);
             $response->setUserId($userId);
             $response->setSelectedOption($option);
-
-            if ($response->submitResponse()) {
-                header('Location: VoteController.php?action=result&vote_id=' . $voteId);
+            
+            if ($response->hasUserVoted($voteId, $userId)) {
+                echo "لقد قمت بالتصويت مسبقًا";
+                exit;
+            } else if ($response->submit()) {
+                header('Location: VoteController.php?action=list&vote_id=' . $voteId . '&project_id=' . $projectId);
                 exit;
             } else {
                 echo "فشل في إرسال التصويت";
             }
+
         }
     }
 

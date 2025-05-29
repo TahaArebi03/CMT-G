@@ -63,15 +63,16 @@ class Vote {
         $db = new Connect();
         $pdo = $db->conn;
 
-        $stmt = $pdo->prepare("INSERT INTO votes (project_id, question, options, status, created_by) VALUES (?, ?, ?, 'open', ?)");
+        $stmt = $pdo->prepare("INSERT INTO votes (project_id, question, status, created_by) VALUES (?, ?,'open', ?)");
         $ok= $stmt->execute([
             $this->project_id,
             $this->question,
-            // json_encode($this->options), // Assuming options is already a JSON string
             $this->created_by
         ]);
         if ($ok) {
-            $this->vote_id = $pdo->lastInsertId(); // Get the last inserted ID
+            $this->vote_id = $pdo->lastInsertId();
+            
+            // Get the last inserted ID
             return $ok;
         }
     }
