@@ -22,6 +22,7 @@ class VoteController
     public function createAction()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
             $vote = new Vote();
             $vote->setProjectId($_GET['project_id']);
             $vote->setQuestion($_POST['question']);
@@ -33,7 +34,10 @@ class VoteController
                 header('Location: VoteController.php?action=list&project_id=' . $vote->getProjectId());
                 exit;
             } else {
-                echo "فشل في إنشاء التصويت";
+                throw new Exception("فشل في إنشاء التصويت");
+            }
+            } catch (Exception $e) {
+                echo " خطأ اتناء انشاء التصويت: " . $e->getMessage();
             }
         } else {
             $project_id = $_GET['project_id'] ?? 0;
@@ -44,6 +48,7 @@ class VoteController
     public function voteAction()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
             $response = new VoteResponse();
 
             $voteId = $_GET['vote_id'];
@@ -57,13 +62,17 @@ class VoteController
             if ($response->hasUserVoted($voteId, $userId)) {
                 echo "لقد قمت بالتصويت مسبقًا";
                 exit;
-            } else if ($response->submit()) {
+            } 
+             if ($response->submit()) {
                 header('Location: VoteController.php?action=list&vote_id=' . $voteId . '&project_id=' . $projectId);
                 exit;
             } else {
-                echo "فشل في إرسال التصويت";
+                throw new Exception("فشل في إرسال التصويت");
             }
 
+        } catch (Exception $e) {
+                echo "خطأ في التصويت: " . $e->getMessage();
+            }
         }
     }
 

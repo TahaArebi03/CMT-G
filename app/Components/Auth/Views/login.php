@@ -35,7 +35,7 @@
       </button>
 
       <div class="register-link">
-        Don't have an account? <a href="register.php">Create one here</a>
+        Don't have an account? <a href="../Controllers/AuthController.php?action=register">Create one here</a>
       </div>
     </form>
   </div>

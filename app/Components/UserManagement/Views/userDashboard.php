@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '../../../UserManagement/Controllers/UserController.php';
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +12,7 @@ require __DIR__ . '../../../UserManagement/Controllers/UserController.php';
 <body>
   <div class="dashboard-container">
     <header>
-      <h1>Welcome, <?php echo htmlspecialchars($user->getName); ?></h1>
+      <h1>Welcome, <?php echo $user->getName(); ?></h1>
       <p>Your dashboard at a glance</p>
     </header>
 

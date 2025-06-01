@@ -35,7 +35,7 @@ if (session_status() === PHP_SESSION_NONE) {
   <div class="container">
   <?php if (empty($project)): ?>
       <p class="empty">You don't have any project yet.</p>
-      <a href="projectForm.php" class="add-btn">+ Add New Project</a>
+      <a href="ProjectController.php?action=create" class="add-btn">+ Add New Project</a>
   <?php else: ?>
     <h1>My project</h1>
     <ul class="pm-list">

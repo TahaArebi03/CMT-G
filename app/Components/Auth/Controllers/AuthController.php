@@ -55,12 +55,12 @@ class AuthController {
                 // تسجيل المستخدم
             if (Auth::register($name, $email, $password, $role, $language, $major)) {
                 
-                if ($role === 'student') {
+                if ($role === 'Student') {
                     
-                    header('Location: ../../UserManagement/Views/userDashboard.php');
+                    header('Location: ../../UserManagement/Controllers/UserController.php?action=dashboard');
                     exit;
-                } elseif ($role === 'admin') {
-                    header('Location: ../../ProjectManagement/Views/projectList.php');
+                } elseif ($role === 'Admin') {
+                    header('Location: ../../ProjectManagement/Controllers/ProjectController.php?action=list');
                     exit;
                 }
             } else {
@@ -68,11 +68,11 @@ class AuthController {
             }
         }
         
-        include __DIR__ . '/../Views/register.php';
     }
+    include __DIR__ . '/../Views/register.php';
 }   
     public function logoutAction() {
-        // هنا يمكنك إضافة منطق تسجيل الخروج، مثل حذف الجلسة
+      
         session_start();
         session_destroy();
         header('Location: login.php');

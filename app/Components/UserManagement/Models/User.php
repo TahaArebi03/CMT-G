@@ -126,24 +126,25 @@ class User {
         if (!$row) return null;
 
         $u = new User();
-        $u->userId     = $row['user_id'];
-        $u->name       = $row['name'];
-        $u->email      = $row['email'];
-        $u->password   = $row['password'];
-        $u->role       = $row['role'];
-        $u->language   = $row['language'];
-        $u->projectId  = $row['project_id']; 
+        $u->setUserId($row['user_id']);
+        $u->setName($row['name']);
+        $u->setEmail($row['email']);
+        $u->setPassword($row['password']); // لا نستخدمه هنا، فقط للتعيين
+        $u->setRole($row['role']);
+        $u->setLanguage($row['language']);
+        $u->setMajor($row['major']);
+        $u->setProjectId($row['project_id']);
         return $u;
     }
 
     public function getUserInfo(): array {
         return [
-            'user_id'    => $this->userId,
-            'name'       => $this->name,
-            'email'      => $this->email,
-            'role'       => $this->role,
-            'language'   => $this->language,
-            'project_id' => $this->projectId
+            'user_id'    => $this->getUserId(),
+            'name'       => $this->getName(),
+            'email'      => $this->getEmail(),
+            'role'       => $this->getRole(),
+            'language'   => $this->getLanguage(),
+            'project_id' => $this->getProjectId()
         ];
     }
 }

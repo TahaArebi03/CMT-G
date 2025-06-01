@@ -48,11 +48,11 @@
         <h4>Account Type</h4>
         <div class="role-select">
           <div>
-            <input type="radio" id="student" name="role" value="student" checked>
+            <input type="radio" id="student" name="role" value="Student" checked>
             <label for="student">Student</label>
           </div>
           <div>
-            <input type="radio" id="admin" name="role" value="admin">
+            <input type="radio" id="admin" name="role" value="Admin">
             <label for="admin">Admin</label>
           </div>
         </div>
@@ -82,7 +82,7 @@
       </button>
 
       <div class="login-link">
-        Already have an account? <a href="login.html">Login here</a>
+        Already have an account? <a href="../Controllers/AuthController.php?action=login">Login here</a>
       </div>
     </form>
   </div>
