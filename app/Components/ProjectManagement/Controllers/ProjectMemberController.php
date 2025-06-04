@@ -26,6 +26,7 @@ class ProjectMemberController
             header('Location: ProjectController.php?action=list');
             exit;
         }
+        $user=User::findById($_SESSION['user_id'] ?? 0);
         $members = ProjectMember::findByProjectId($project_id);
         include __DIR__ . '/../Views/viewMembers.php';
 

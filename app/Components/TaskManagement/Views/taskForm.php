@@ -35,7 +35,7 @@ require_once __DIR__ . '/../../UserManagement/Models/StudentUser.php';
 
     <label for="status">Status</label><br>
     <select id="status" name="status">
-      <?php foreach (['not_started','in_progress','completed','in_review'] as $st): ?>
+      <?php foreach (['not_started','in_progress','completed'] as $st): ?>
         <option value="<?= $st ?>">
           <?= ucfirst(str_replace('_',' ',$st)) ?>
         </option>

@@ -27,8 +27,12 @@ class TaskController
 
         // جلب كل المهام للمشروع وفرزها حسب الأولوية
         $tasks  = Task::orderByPriority(Task::findByProjectId($project_id));
-        
-
+        $assigneeNames = [];
+        // جلب أسماء الطلاب المعينين لكل مهمة
+        foreach ($tasks as $task) {
+            $assignee = $task->getAssignedTo() ? User::findById($task->getAssignedTo())->getName() : 'غير مخصّص';
+            $assigneeNames[$task->getTaskId()] = $assignee;
+        }
         include __DIR__ . '/../Views/taskList.php';
     }
 
@@ -66,7 +70,69 @@ class TaskController
     /**
      * تعديل مهمة (GET يعرض النموذج المُعبَّأ، POST يعالج التحديث)
      */
-    public function editAction()
+   
+
+
+public function completeAction()
+{
+    $taskId = intval($_GET['task_id'] ?? 0);
+    $task = Task::findById($taskId);
+
+    if ($task && $task->getStatus() === 'in_progress') {
+        $task->complete();
+    }
+
+    header("Location: TaskController.php?action=list&project_id=" . $task->getProjectId());
+    exit;
+}
+public function submitAction()
+{
+    $taskId = intval($_GET['task_id'] ?? 0);
+    $task   = Task::findById($taskId);
+    
+    if (!$task || $_SESSION['user_id'] != $task->getAssignedTo()) {
+        // غير مسموح
+        header("Location: TaskController.php?action=list&project_id=" . $task->getProjectId());
+        exit;
+    }
+
+    // أول ما يدخل للواجهة، نغير الحالة إلى in_progress
+    if ($task->getStatus() === 'not_started') {
+        $task->start();
+    }
+
+    include __DIR__ . '/../Views/submitTask.php';
+    exit;
+}
+public function uploadAction()
+{
+    $taskId = intval($_GET['task_id'] ?? 0);
+   
+    $task = Task::findById($taskId);
+    if (!$task || $_SESSION['user_id'] != $task->getAssignedTo()) {
+        header("Location: TaskController.php?action=list&project_id=" . $task->getProjectId());
+        exit;
+    }
+
+    if (isset($_FILES['submission_file'])) {
+        $fileName = $_FILES['submission_file']['name'];
+        $tmpName  = $_FILES['submission_file']['tmp_name'];
+        $ext      = pathinfo($fileName, PATHINFO_EXTENSION);
+        $newName  = "submission_task_{$taskId}_" . time() . '.' . $ext;
+
+        move_uploaded_file($tmpName, __DIR__ . '/../../../uploads/' . $newName);
+
+        // حفظ اسم الملف في قاعدة البيانات إن حبيت
+        // مثلاً: $task->setSubmissionFile($newName);
+
+        // تغيير الحالة إلى مكتملة
+        $task->complete();
+    }
+
+    header("Location: TaskController.php?action=list&project_id=" . $task->getProjectId());
+    exit;
+}
+ public function editAction()
     {
         $taskId = intval($_GET['id'] ?? 0);
         if (!$taskId) {
@@ -123,6 +189,7 @@ class TaskController
         header('Location: TaskController.php?action=list');
         exit;
     }
+
 }
 
 // Router-like dispatch
@@ -133,11 +200,20 @@ switch ($action) {
     case 'create':
         $controller->createAction();
         break;
+    case 'submit':
+        $controller->submitAction();
+        break;
+    case 'upload':
+        $controller->uploadAction();
+        break;        
     case 'edit':
         $controller->editAction();
         break;
     case 'delete':
         $controller->deleteAction();
+        break;
+    case 'complete':
+        $controller->completeAction();
         break;
     case 'list':
     default:

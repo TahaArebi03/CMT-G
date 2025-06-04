@@ -38,15 +38,6 @@ class ProjectController
         } else {
             $project = null;
         }
-        // if ($project) {
-        //     // عرض الـ view
-        //     include __DIR__ . '/../Views/projectList.php';      
-        //     exit;
-        // } else {
-        //     header('Location: ProjectController.php?action=create');
-        //     exit;
-
-        // }
         include __DIR__ . '/../Views/projectList.php';
         exit; 
     }

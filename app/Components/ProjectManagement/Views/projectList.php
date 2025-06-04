@@ -9,21 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// $project = null;
 
-// if (isset($_SESSION['user_id'])) {
-//     $userId = $_SESSION['user_id'];
-
-//     // جلب بيانات المستخدم
-//     $user = User::findById($userId); 
-
-//     if ($user) {
-//         $projectId = $user->getProjectId();
-
-//         // جلب المشروع
-//         $project = Project::findById($projectId);
-//     }
-// }
 ?>
 <html lang="en">
 <head>
@@ -35,7 +21,11 @@ if (session_status() === PHP_SESSION_NONE) {
   <div class="container">
   <?php if (empty($project)): ?>
       <p class="empty">You don't have any project yet.</p>
+      <?php if($user->getRole() === 'Admin'): ?>
       <a href="ProjectController.php?action=create" class="add-btn">+ Add New Project</a>
+      <?php else: ?>
+        <a href="#" class="add-btn">Join</a>
+      <?php endif; ?>
   <?php else: ?>
     <h1>My project</h1>
     <ul class="pm-list">

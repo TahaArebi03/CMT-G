@@ -34,22 +34,18 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
         </tr>
       </thead>
       <tbody>
-      <?php foreach ($tasks as $t): 
-      
-        $assignee = $t->getAssignedTo()
-          ? User::findById($t->getAssignedTo())->getName()
-          : 'غير مخصّص';
+      <?php foreach ($tasks as $t):
+
+        
       ?>
         <tr>
           <td><?= htmlspecialchars($t->getTitle()) ?></td>
-          <td><?= htmlspecialchars($assignee) ?></td>
+          <td><?= htmlspecialchars($assigneeNames[$t->getTaskId()]) ?></td>
           <td><?= htmlspecialchars(ucfirst($t->getStatus())) ?></td>
           <td><?= htmlspecialchars($t->getDeadline()) ?></td>
           <td><?= htmlspecialchars($t->getPriority()) ?></td>
-          <td>
-            <a href="../Controllers/TaskController.php?action=edit&id=<?= $t->getTaskId() ?>
-                      &project_id=<?= $project_id ?>">تفاصيل</a>
-          </td>
+          <td> <a href="../Controllers/TaskController.php?action=submit&task_id=<?= $t->getTaskId() ?>
+                      &project_id=<?= $project_id ?>">بدء</a></td>
           <td>
             <a href="../Controllers/CommentController.php?action=list&task_id=<?=$t->getTaskId()?>
                      &user_id=<?=$t->getAssignedTo()?>">تعليقات</a>

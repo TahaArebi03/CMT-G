@@ -26,7 +26,7 @@ class AuthController {
 
                 // التحقق من نوع المستخدم وتوجيهه للواجهة المناسبة
                 if ($user['role'] === 'Student') {
-                    header('Location: ../../UserManagement/Views/userDashboard.php');
+                    header('Location: ../../UserManagement/Controllers/UserController.php?action=dashboard');
                 } elseif ($user['role'] === 'Admin') {
                     header('Location: ../../ProjectManagement/Controllers/ProjectController.php?action=list');
                 }

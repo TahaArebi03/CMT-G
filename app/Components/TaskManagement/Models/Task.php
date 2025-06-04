@@ -1,36 +1,32 @@
 <?php
-
 require_once __DIR__ . '/../../../../config/config.php';
-
 class Task
 {
-    private $taskId;
-    private $projectId;
+    private $task_id;
+    private $project_id;
     private $title;
     private $description;
-    private $assignedTo;  // user_id
+    private $assigned_to;  // user_id
     private $status;      // not_started, in_progress, completed, in_review
     private $priority;    // high, medium, low
     private $deadline;    // YYYY-MM-DD HH:MM:SS
-
     // ——— Getters & Setters ———
-    public function getTaskId()      { return $this->taskId; }
-    public function getProjectId()   { return $this->projectId; }
+    public function getTaskId()      { return $this->task_id; }
+    public function getProjectId()   { return $this->project_id; }
     public function getTitle()       { return $this->title; }
     public function getDescription() { return $this->description; }
-    public function getAssignedTo()  { return $this->assignedTo; }
+    public function getAssignedTo()  { return $this->assigned_to; }
     public function getStatus()      { return $this->status; }
     public function getPriority()    { return $this->priority; }
     public function getDeadline()    { return $this->deadline; }
-
-    public function setProjectId($id)      { $this->projectId   = $id; }
+    public function setTaskId($id)         { $this->task_id     = $id; }
+    public function setProjectId($id)      { $this->project_id  = $id; }
     public function setTitle($t)            { $this->title       = $t; }
     public function setDescription($d)      { $this->description = $d; }
-    public function setAssignedTo($u)       { $this->assignedTo  = $u; }
+    public function setAssignedTo($u)       { $this->assigned_to  = $u; }
     public function setStatus($s)           { $this->status      = $s; }
     public function setPriority($p)         { $this->priority    = $p; }
     public function setDeadline($dt)        { $this->deadline    = $dt; }
-
     /**
      * احفظ المهمة (INSERT أو UPDATE)
      */
@@ -39,7 +35,7 @@ class Task
         $db  = new Connect();
         $pdo = $db->conn;
 
-        if ($this->taskId) {
+        if ($this->task_id) {
             // تحديث
             $stmt = $pdo->prepare(
               "UPDATE tasks
@@ -49,11 +45,11 @@ class Task
             return $stmt->execute([
                 $this->title,
                 $this->description,
-                $this->assignedTo,
+                $this->assigned_to,
                 $this->status,
                 $this->priority,
                 $this->deadline,
-                $this->taskId
+                $this->task_id
             ]);
         } else {
             // إدراج جديد
@@ -63,16 +59,16 @@ class Task
                VALUES (?, ?, ?, ?, ?, ?, ?)"
             );
             $ok = $stmt->execute([
-                $this->projectId,
+                $this->project_id,
                 $this->title,
                 $this->description,
-                $this->assignedTo,
+                $this->assigned_to,
                 $this->status,
                 $this->priority,
                 $this->deadline
             ]);
             if ($ok) {
-                $this->taskId = $pdo->lastInsertId();
+                $this->task_id = $pdo->lastInsertId();
             }
             return $ok;
         }
@@ -95,11 +91,11 @@ class Task
         $tasks = [];
         foreach ($rows as $row) {
             $t = new Task();
-            $t->taskId      = $row['task_id'];
-            $t->projectId   = $row['project_id'];
+            $t->task_id      = $row['task_id'];
+            $t->project_id   = $row['project_id'];
             $t->title       = $row['title'];
             $t->description = $row['description'];
-            $t->assignedTo  = $row['assigned_to'];
+            $t->assigned_to  = $row['assigned_to'];
             $t->status      = $row['status'];
             $t->priority    = $row['priority'];
             $t->deadline    = $row['deadline'];
@@ -121,11 +117,11 @@ class Task
         if (!$row) return null;
 
         $t = new Task();
-        $t->taskId      = $row['task_id'];
-        $t->projectId   = $row['project_id'];
+        $t->task_id      = $row['task_id'];
+        $t->project_id   = $row['project_id'];
         $t->title       = $row['title'];
         $t->description = $row['description'];
-        $t->assignedTo  = $row['assigned_to'];
+        $t->assigned_to  = $row['assigned_to'];
         $t->status      = $row['status'];
         $t->priority    = $row['priority'];
         $t->deadline    = $row['deadline'];
@@ -141,4 +137,24 @@ class Task
         });
         return $tasks;
     }
+    public function start()
+{
+    $this->status = 'in_progress';
+    // تحديث في قاعدة البيانات
+    $db = new Connect();
+    $pdo = $db->conn;
+    $stmt = $pdo->prepare("UPDATE tasks SET status = 'in_progress' WHERE task_id = ?");
+    $stmt->execute([$this->task_id]);
+}
+
+public function complete()
+{
+    $this->status = 'completed';
+    $db = new Connect();
+    $pdo = $db->conn;
+    $stmt = $pdo->prepare("UPDATE tasks SET status = 'completed' WHERE task_id = ?");
+    $stmt->execute([$this->task_id]);
+}
+
+
 }
