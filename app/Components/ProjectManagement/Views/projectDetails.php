@@ -45,11 +45,12 @@ require_once __DIR__ . '/../Models/ProjectMember.php';
       </p>
    
     </div>
- 
 
+    <?php if($user->getRole() === "Admin"): ?>
     <a href="ProjectController.php?action=edit&id=<?= $project->getId() ?>"
        class="btn edit">✏️ Edit Project</a>
   </div>
+    <?php endif; ?>
 <style>
   /* General Body Styles */
 body {

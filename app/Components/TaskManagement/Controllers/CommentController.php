@@ -1,7 +1,8 @@
 <?php
 require '../../../../config/config.php';
 require '../Models/Comment.php';
-
+require '../Models/Task.php';
+require '../../UserManagement/Models/User.php';
 class CommentController
 {
 
@@ -17,14 +18,22 @@ class CommentController
     public function list()
     {
         $task_id = $_GET['task_id'] ?? 0;
-        $user_id = $_GET['user_id'] ?? 0;
-        // $user_name = $_SESSION['user']->getName();
+        $user_id = $_SESSION['user_id'] ?? 0;
+        $project_id = $_GET['project_id'] ?? 0;
         if(!$task_id) {
             echo "لا يمكن عرض التعليقات لمهمة غير موجودة.";
             return;
         }
+        
         // جلب التعليقات الخاصة بالمهمة
         $comments = Comment::getCommentsByTaskId($task_id);
+        // عرض اسماء المستخدمين الذين قاموا بالتعليق
+        $userNames = [];
+        foreach ($comments as $comment) {
+            $user = User::findById($comment->getUserId());
+            $userNames[$comment->getCommentId()] = $user->getName();
+        }
+
         include __DIR__ . '/../Views/commentsList.php';
     }
 
@@ -32,12 +41,13 @@ class CommentController
     public function create()
     {
         $task_id = $_GET['task_id'] ?? 0;
-        $user_id = $_GET['user_id'] ?? 0;
+        $user_id = $_SESSION['user_id'] ?? 0;
+        $project_id = $_GET['project_id'] ?? 0;
         if(!$task_id) {
             echo "لا يمكن إضافة تعليق لمهمة غير موجودة.";
             return;
         }
-        
+        $task= Task::findById($task_id);
         if($_SERVER["REQUEST_METHOD"] == "POST") {
             $comment = new Comment();
             $comment->setTaskId($task_id);
@@ -45,7 +55,7 @@ class CommentController
             $comment->setContent($_POST['content']);
             $comment->setCreatedAt(date('Y-m-d H:i:s'));
             if ($comment->save()) {
-                header("Location: CommentController.php?action=list&task_id={$task_id}");
+                header("Location: CommentController.php?action=list&task_id={$task_id}&project_id={$project_id}");
             } else {
                 echo "حدث خطأ أثناء إضافة التعليق.";
             }

@@ -19,6 +19,7 @@ class UserController
     //  */
     public function dashboardAction()
     {
+
         if (empty($_SESSION['user_id'])) {
             header('Location: ../../Auth/Controllers/AuthController.php?action=login');
             exit;
@@ -26,7 +27,6 @@ class UserController
         $user = User::findById($_SESSION['user_id']);
         if (!$user) {
             echo 'User not found.';
-            var_dump($user);
             exit;
         }
         
@@ -42,7 +42,7 @@ class UserController
             header('Location: register.php');
             exit;
         }
-        $user = User::findById($_SESSION['user']->getUserId);
+        $user = User::findById($_SESSION['user_id']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update user properties
@@ -65,7 +65,7 @@ class UserController
     }
 }
 
-// Router-like dispatch (simple)
+
 $controller = new UserController();
 $action     = $_GET['action'] ?? 'dashboard';
 switch ($action) {

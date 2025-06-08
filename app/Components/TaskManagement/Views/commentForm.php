@@ -1,3 +1,8 @@
+<?php
+require_once __DIR__ . '/../../../../config/config.php';
+require_once __DIR__ . '/../Models/Task.php';
+
+?>
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -7,10 +12,10 @@
 </head>
 <body>
 
-<h2>إضافة تعليق جديد للمهمة رقم <?= htmlspecialchars($task_id) ?></h2>
+<h2> إضافة تعليق جديد للمهمة  <?= htmlspecialchars($task->getTitle()) ?></h2>
 
 <form action="../Controllers/CommentController.php?action=create&task_id=<?=$task_id ?>
-&user_id=<?=$user_id?>" method="POST">
+&user_id=<?=$user_id?>&project_id=<?=$project_id?>" method="POST">
 
     <div>
         <label for="content">نص التعليق:</label>

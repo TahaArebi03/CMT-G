@@ -1,5 +1,5 @@
 <?php
-// Controllers/AuthController.php
+
 
 require_once __DIR__ . '/../Models/Auth.php';
 
@@ -9,6 +9,7 @@ class AuthController {
         session_start();
         $error = "";
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try{
             $email = trim($_POST['email']);
             $password = trim($_POST['password']);
 
@@ -31,7 +32,10 @@ class AuthController {
                     header('Location: ../../ProjectManagement/Controllers/ProjectController.php?action=list');
                 }
             }
+        } catch (Exception $e) {
+            $error = "حدث خطأ: " . $e->getMessage();
         }
+    }
 
         include __DIR__ . '/../Views/login.php';
     }
@@ -39,6 +43,7 @@ class AuthController {
         $error = "";
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try{
             $name = trim($_POST['name']);
             $email = trim($_POST['email']);
             $password = trim($_POST['password']);
@@ -68,7 +73,12 @@ class AuthController {
             }
         }
         
+    }catch (Exception $e) {
+            $error = "حدث خطأ: " . $e->getMessage();
+        }
     }
+
+        // عرض نموذج التسجيل
     include __DIR__ . '/../Views/register.php';
 }   
     public function logoutAction() {

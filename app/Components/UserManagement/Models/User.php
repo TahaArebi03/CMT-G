@@ -47,6 +47,7 @@ class User {
      * حفظ المستخدم (تسجيل أو تحديث)
      */
     public function save(): bool {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
 
@@ -85,20 +86,32 @@ class User {
             }
             return $ok;
         }
+    } catch (PDOException $e) {
+            // في حالة حدوث خطأ في قاعدة البيانات
+            error_log("User save error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
      * تسجيل الدخول
      */
     public static function login(string $email, string $password): ?User {
+    try{
         $user = self::findByEmail($email);
         if ($user && password_verify($password, $user->password)) {
             return $user;
         }
+    } catch (PDOException $e){
+        error_log("Login error: " . $e->getMessage());
+        
+    }
         return null;
+    
     }
 
     public static function findByEmail(string $email): ?User {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -115,9 +128,13 @@ class User {
         $u->language   = $row['language'];
         $u->projectId  = $row['project_id'];
         return $u;
+    } catch (PDOException $e){
+        error_log("FindByEmail Error: " . $e->getMessage());
+        return null;
     }
-
+    }
     public static function findById(int $id): ?User {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
@@ -135,6 +152,10 @@ class User {
         $u->setMajor($row['major']);
         $u->setProjectId($row['project_id']);
         return $u;
+        } catch (PDOException $e){
+            error_log("FindById Error: " . $e->getMessage());
+        return null;
+        }
     }
 
     public function getUserInfo(): array {

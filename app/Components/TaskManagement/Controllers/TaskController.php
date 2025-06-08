@@ -19,14 +19,29 @@ class TaskController
     public function listAction()
     {
         $project_id = intval($_GET['project_id'] ?? 0);
+        $user_id    = $_SESSION['user_id'] ?? 0;
         if (!$project_id) {
             // إذا لم يُحدد مشروع، نعيد إلى قائمة المشاريع
             header('Location: ../../ProjectManagement/Controllers/ProjectController.php?action=list');
             exit;
         }
+        $user= User::findById($user_id);
+        if($user->getRole()==='Admin'){
+            // جلب كل المهام للمشروع وفرزها حسب الأولوية
+            $tasks  = Task::orderByPriority(Task::findByProjectId($project_id));
 
-        // جلب كل المهام للمشروع وفرزها حسب الأولوية
-        $tasks  = Task::orderByPriority(Task::findByProjectId($project_id));
+        }else{
+            // إذا كان المستخدم طالب، نعرض له المهام المخصصة له فقط
+            $all_tasks=Task::findByProjectId($project_id);
+            $tasks=[];
+            foreach($all_tasks as $task){
+                if($task->getAssignedTo() === $user_id){
+                    $tasks[] = $task;
+                }
+            }
+        }
+        
+        
         $assigneeNames = [];
         // جلب أسماء الطلاب المعينين لكل مهمة
         foreach ($tasks as $task) {
@@ -102,7 +117,6 @@ public function submitAction()
     }
 
     include __DIR__ . '/../Views/submitTask.php';
-    exit;
 }
 public function uploadAction()
 {

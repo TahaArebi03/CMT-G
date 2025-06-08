@@ -8,6 +8,7 @@ class StudentUser extends User {
     // عرض الطلبة لاضافتهم في المشروع
     public static function findAllStudents(): array
     {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare(
@@ -27,6 +28,10 @@ class StudentUser extends User {
             $students[] = $s;
         }
         return $students;
+    } catch (PDOException $e) {
+            error_log("FindAllStudents Error: " . $e->getMessage());
+            return [];
+        }
     }
 
 
@@ -34,6 +39,7 @@ class StudentUser extends User {
     // استرجاع الطلبة الموجودين في المشروع .
     public static function findByProject(int $projectId): array
     {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
         $sql = "
@@ -54,15 +60,10 @@ class StudentUser extends User {
             $students[] = $s;
         }
         return $students;
+    } catch (PDOException $e) {
+            error_log("FindByProject Error: " . $e->getMessage());
+            return [];
+        }
     }
 
-
-
-
-    /**
-     * تسليم واجب
-     */
-    public function submitAssignment() {
-        // منطق تسليم الواجب
-    }
 }

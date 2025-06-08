@@ -23,12 +23,12 @@ class ProjectController
         // $project_id = intval($_GET['id'] ?? 0);
         if (isset($_SESSION['user_id'])) {
 
-            $userId = $_SESSION['user_id'];
-            $user = User::findById($userId);
+            $user_id = $_SESSION['user_id'];
+            $user = User::findById($user_id);
             if ($user) {
-                $projectId = $user->getProjectId();
-                if ($projectId) {
-                    $project = Project::findById($projectId);
+                $project_id = $user->getProjectId();
+                if ($project_id) {
+                    $project = Project::findById($project_id);
                 } else {
                     $project = null;
                 }
@@ -90,43 +90,43 @@ class ProjectController
     /**
      * إظهار نموذج التعديل أو معالجة التحديث
      */
-    public function editAction()
-    {
-        $id = intval($_GET['id'] ?? 0);
-        if (!$id) {
-            header('Location: ProjectController.php?action=list');
-            exit;
-        }
-        $project = Project::findById($id);
+    // public function editAction()
+    // {
+    //     $id = intval($_GET['id'] ?? 0);
+    //     if (!$id) {
+    //         header('Location: ProjectController.php?action=list');
+    //         exit;
+    //     }
+    //     $project = Project::findById($id);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $project->setTitle(trim($_POST['title'] ?? $project->getTitle()));
-            $project->setDescription(trim($_POST['description'] ?? $project->getDescription()));
-            $project->setObjectives(trim($_POST['objectives'] ?? $project->getObjectives()));
-            $project->setDeadline(trim($_POST['deadline'] ?? $project->getDeadline()));
-            $project->setStatus(trim($_POST['status'] ?? $project->getStatus()));
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         $project->setTitle(trim($_POST['title'] ?? $project->getTitle()));
+    //         $project->setDescription(trim($_POST['description'] ?? $project->getDescription()));
+    //         $project->setObjectives(trim($_POST['objectives'] ?? $project->getObjectives()));
+    //         $project->setDeadline(trim($_POST['deadline'] ?? $project->getDeadline()));
+    //         $project->setStatus(trim($_POST['status'] ?? $project->getStatus()));
 
-            $project->updateProject();
-            header("Location: ProjectController.php?action=view&id={$id}");
-            exit;
-        } else {
-            include __DIR__ . '/../Views/projectForm.html';
-        }
-    }
+    //         $project->updateProject();
+    //         header("Location: ProjectController.php?action=view&id={$id}");
+    //         exit;
+    //     } else {
+    //         include __DIR__ . '/../Views/projectForm.html';
+    //     }
+    // }
 
     /**
      * أرشفة المشروع
      */
-    public function archiveAction()
-    {
-        $id = intval($_GET['id'] ?? 0);
-        if ($id) {
-            $project = Project::findById($id);
-            $project->archiveProject();
-        }
-        header('Location: ProjectController.php?action=list');
-        exit;
-    }
+    // public function archiveAction()
+    // {
+    //     $id = intval($_GET['id'] ?? 0);
+    //     if ($id) {
+    //         $project = Project::findById($id);
+    //         $project->archiveProject();
+    //     }
+    //     header('Location: ProjectController.php?action=list');
+    //     exit;
+    // }
 }
 
 /**
@@ -142,12 +142,12 @@ switch ($action) {
     case 'view':
         $controller->viewAction();
         break;
-    case 'edit':
-        $controller->editAction();
-        break;
-    case 'archive':
-        $controller->archiveAction();
-        break;
+    // case 'edit':
+    //     $controller->editAction();
+    //     break;
+    // case 'archive':
+    //     $controller->archiveAction();
+    //     break;
     case 'list':
     default:
         $controller->listAction();

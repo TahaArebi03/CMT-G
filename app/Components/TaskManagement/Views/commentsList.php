@@ -11,7 +11,12 @@
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-
+<a href="../Controllers/TaskController.php?action=list&task_id=<?= $task_id ?>
+&project_id=<?= $project_id ?>" class="btn">العودة إلى المهام</a>
+<?php
+// var_dump($project_id);
+// exit;
+?>
 <h3>التعليقات:</h3>
 <ul>
     <?php if (empty($comments)): ?>
@@ -19,9 +24,9 @@
     <?php else: ?>
         <?php foreach ($comments as $comment): ?>
             <li>
-                <!-- user name -->
-                <!-- <strong><?= htmlspecialchars($user_name) ?>:</strong> -->
-                <strong><?= htmlspecialchars($comment->getUserId()) ?>:</strong>
+
+                <strong><?= htmlspecialchars($userNames[$comment->getCommentId()]) ?>:</strong>
+              
                 <?= htmlspecialchars($comment->getContent()) ?>
                 <br>
                 <small>تاريخ: <?= htmlspecialchars($comment->getCreatedAt()) ?></small>
@@ -35,7 +40,8 @@
         <?php endforeach; ?>
     <?php endif; ?>
 </ul>
-<a href="../Controllers/CommentController.php?action=create&task_id=<?= $task_id ?>&user_id=<?= $user_id ?>" class="btn add">
+<a href="../Controllers/CommentController.php?action=create&task_id=<?= $task_id ?>
+ &project_id=<?= $project_id ?>" class="btn add">
     + إضافة تعليق
 </a>
 

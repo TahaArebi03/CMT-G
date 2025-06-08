@@ -4,6 +4,7 @@ require_once __DIR__ . '../../../../../config/config.php';
 class Auth {
 
     public static function login($email, $password) {
+        try{
         $db = new Connect();
         $pdo = $db->conn;
         
@@ -12,11 +13,12 @@ class Auth {
         
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user) {
-            return $user;
+        return $user ?: null;
+        } catch (PDOException $e) {
+            // في حالة حدوث خطأ في قاعدة البيانات
+            error_log("Login error: " . $e->getMessage());
+            return null;
         }
-        
-        return null;
     }
     public static function emailExists($email) {
         $db = new Connect();
@@ -34,6 +36,7 @@ class Auth {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     public static function register($name, $email, $password, $role, $language,$major) {
+        try{
         $db = new Connect();
         $pdo = $db->conn;
 
@@ -55,6 +58,11 @@ class Auth {
         } else {
 
             // إذا كان البريد الإلكتروني موجودًا
+            return false;
+        }
+        } catch (PDOException $e) {
+            // في حالة حدوث خطأ في قاعدة البيانات
+            error_log("Registration error: " . $e->getMessage());
             return false;
         }
     }

@@ -15,13 +15,19 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
  
 </head>
 <body>
-  <h1>📋 قائمة المهام للمشروع</h1>
-  <a href="../Controllers/TaskController.php?action=create&project_id=<?= $project_id ?>" class="btn add">
-    + إضافة مهمة
-  </a>
+  <div class="container">
+    <h1>📋 قائمة المهام للمشروع</h1>
+    <div class="page-actions">
+        <a href="../../ProjectManagement/Controllers/ProjectController.php?action=view&id=<?= $project_id ?>" class="back-link">← العودة إلى المشروع</a>
+        <?php if ($user->getRole() === 'Admin'): ?>
+            <a href="../Controllers/TaskController.php?action=create&project_id=<?= $project_id ?>" class="add-task-btn">
+                + إضافة مهمة
+            </a>
+        <?php endif; ?>
+    </div>
 
   <?php if (empty($tasks)): ?>
-    <p>لا توجد مهام بعد.</p>
+    <p class="no-tasks-message">لا توجد مهام مضافة لهذا المشروع حتى الآن.</p>
   <?php else: ?>
     <table>
       <thead>
@@ -30,175 +36,258 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
           <th>مسند إلى</th>
           <th>الحالة</th>
           <th>المهلة</th>
+          <th>الأولوية</th>
           <th>إجراءات</th>
         </tr>
       </thead>
       <tbody>
-      <?php foreach ($tasks as $t):
-
-        
-      ?>
-        <tr>
-          <td><?= htmlspecialchars($t->getTitle()) ?></td>
-          <td><?= htmlspecialchars($assigneeNames[$t->getTaskId()]) ?></td>
-          <td><?= htmlspecialchars(ucfirst($t->getStatus())) ?></td>
-          <td><?= htmlspecialchars($t->getDeadline()) ?></td>
-          <td><?= htmlspecialchars($t->getPriority()) ?></td>
-          <td> <a href="../Controllers/TaskController.php?action=submit&task_id=<?= $t->getTaskId() ?>
-                      &project_id=<?= $project_id ?>">بدء</a></td>
-          <td>
-            <a href="../Controllers/CommentController.php?action=list&task_id=<?=$t->getTaskId()?>
-                     &user_id=<?=$t->getAssignedTo()?>">تعليقات</a>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-      </tbody>
-    </table>
-  <?php endif; ?>
+      <?php foreach ($tasks as $t): ?>
+ <tr>
+                        <td data-label="العنوان"><?= htmlspecialchars($t->getTitle()) ?></td>
+                        <td data-label="مسند إلى"><?= htmlspecialchars($assigneeNames[$t->getTaskId()] ?? 'غير معين') ?></td>
+                        <td data-label="الحالة">
+                            <span >
+                                <?= htmlspecialchars(ucfirst($t->getStatus())) ?>
+                            </span>
+                        </td>
+                        <td data-label="الأولوية">
+                            <span class="priority priority-<?= strtolower(htmlspecialchars($t->getPriority())) ?>">
+                                <?= htmlspecialchars(ucfirst($t->getPriority())) ?>
+                            </span>
+                        </td>
+                        <td data-label="المهلة"><?= htmlspecialchars($t->getDeadline()) ?></td>
+                        <td data-label="إجراءات">
+                          <?php if ($user->getRole() === 'Student'): ?>
+                            <a href="../Controllers/TaskController.php?action=submit&task_id=<?= $t->getTaskId() ?>&project_id=<?= $project_id ?>" class="action-link">بدء</a>
+                          <?php endif; ?>
+                            <a href="../Controllers/CommentController.php?action=list&task_id=<?=$t->getTaskId()?>
+                            &user_id=<?=$t->getAssignedTo()?>&project_id=<?=$project_id?>" class="action-link">تعليقات</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
 </body>
 </html>
  <style>
-    /* General Body Styles */
+   :root {
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --light: #f8f9fa;
+  --dark: #343a40;
+  --white: #ffffff;
+  --font-family: 'Cairo', sans-serif;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: #f4f7f6;
-  color: #333;
+  font-family: var(--font-family);
+  background-color: #f4f7f9;
+  color: var(--dark);
   margin: 0;
-  padding: 20px;
-  direction: rtl; /* Setting text direction for Arabic */
+  direction: rtl;
 }
 
-/* Main Heading */
+.container {
+  padding: 20px 30px;
+  max-width: 1200px;
+  margin: 20px auto;
+}
+
 h1 {
-  color: #2c3e50;
+  color: var(--dark);
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
 }
 
-/* "Add Task" Button */
-.btn.add {
-  display: inline-block;
-  background-color: #28a745; /* Green for add actions */
-  color: white;
-  padding: 10px 20px;
-  margin-bottom: 25px;
-  border-radius: 5px;
+.page-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.back-link {
+  color: var(--secondary);
   text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+.back-link:hover {
+  color: var(--primary);
 }
 
-.btn.add:hover {
-  background-color: #218838; /* Darker green on hover */
+.add-task-btn {
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+.add-task-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
 }
 
-/* "No tasks" Message */
-p {
+.no-tasks-message {
   text-align: center;
-  font-size: 1.1em;
-  color: #777;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 1.2rem;
+  color: var(--secondary);
+  background-color: var(--white);
+  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
-/* Table Styles */
+.table-container {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0 auto;
-  background-color: #ffffff;
-  border-radius: 8px;
-  overflow: hidden; /* Ensures border-radius is respected by child elements like thead */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Table Header */
 thead tr {
-  background-color: #34495e; /* Dark blue-gray for header */
-  color: #ffffff;
-  text-align: right; /* Align header text to the right for RTL */
-}
-
-th, td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #ecf0f1; /* Light border for rows */
+  background-color: #f1f5f9;
 }
 
 th {
-  font-weight: 600;
+  padding: 15px;
+  text-align: right;
+  font-weight: 700;
+  color: #475569;
+  font-size: 0.9rem;
   text-transform: uppercase;
-  font-size: 0.9em;
-  letter-spacing: 0.5px;
 }
 
-/* Table Body */
-tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-tbody tr:nth-of-type(even) {
-  background-color: #f9f9f9; /* Subtle striping for even rows */
+td {
+  padding: 15px;
+  border-top: 1px solid #e2e8f0;
+  vertical-align: middle;
 }
 
 tbody tr:hover {
-  background-color: #e8f4fd; /* Light blue hover for rows */
+  background-color: #f8fafc;
 }
 
-tbody td {
-  color: #555;
+/* Status & Priority Badges */
+.status, .priority {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--white);
+  text-transform: capitalize;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
 }
+
+/* Colors for Statuses (add more as needed) */
+.status-open { background-color: var(--info); }
+.status-in-progress, .status-in_progress { background-color: var(--primary); }
+.status-completed { background-color: var(--success); }
+.status-pending { background-color: var(--warning); color: var(--dark); }
+
+/* Colors for Priorities */
+.priority-high { background-color: var(--danger); }
+.priority-medium { background-color: var(--warning); color: var(--dark); }
+.priority-low { background-color: var(--secondary); }
 
 /* Action Links in Table */
-td a {
-  color: #3498db; /* Blue for action links */
+td .action-link {
+  color: var(--primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   padding: 5px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+  margin: 0 4px;
+}
+td .action-link:hover {
+  background-color: var(--primary);
+  color: var(--white);
 }
 
-td a:hover {
-  color: #ffffff;
-  background-color: #2980b9; /* Darker blue background on hover */
-  text-decoration: none;
-}
-
-/* Responsive adjustments (optional, but good practice) */
+/* -- Responsive Card-based Layout -- */
 @media (max-width: 768px) {
-  body {
+  .page-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+  }
+    .add-task-btn, .back-link {
+        text-align: center;
+    }
+    
+  .table-container {
+    background-color: transparent;
+    box-shadow: none;
+  }
+  
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  
+  tr {
+    margin-bottom: 1.5rem;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid #e2e8f0;
     padding: 10px;
   }
-
-  h1 {
-    font-size: 1.8em;
+  
+  td {
+    border: none;
+    border-bottom: 1px solid #e8edf2;
+    position: relative;
+    padding-right: 50%; /* Space for label */
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Aligns content to the left in RTL */
   }
 
-  .btn.add {
-    display: block; /* Make button full width on smaller screens */
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 250px; /* Optional: constrain width */
+  td:last-child {
+    border-bottom: none;
   }
 
-  /*
-    For very small screens, you might consider transforming the table
-    into a card-based layout, but that's more complex and
-    often requires JavaScript or more intricate CSS.
-    The following is a simple scroll for overflow if table is too wide.
-  */
-  table {
-    display: block;
-    overflow-x: auto; /* Allows horizontal scrolling for the table if it's too wide */
-    white-space: nowrap; /* Prevents text wrapping in cells that might break layout */
-  }
-
-  th, td {
-    white-space: nowrap; /* Ensure cells don't wrap and break layout when scrolling */
+  td:before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #334155;
+    position: absolute;
+    top: 50%;
+    right: 15px; /* Position label to the right */
+    transform: translateY(-50%);
+    text-align: right;
   }
 }
-/* Additional styles can go here */
   </style>
