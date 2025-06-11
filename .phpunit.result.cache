@@ -1,0 +1,1 @@
+{"version":1,"defects":{"UserTest::testGetUserInfo":4,"UserTest::testFindUserById":3},"times":{"UserTest::testSetPassword":0.19,"UserTest::testGetUserInfo":0.094,"UserTest::testSaveUser":0.105,"UserTest::testFindUserById":0.104,"UserTest::testFindUserByEmail":0.096}}

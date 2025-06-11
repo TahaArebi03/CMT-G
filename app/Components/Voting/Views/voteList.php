@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../Controllers/VoteController.php';
+require_once __DIR__ . '/../../UserManagement/Models/User.php';
+?>
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -8,11 +12,14 @@
 <body>
     <div class="container">
         <h2>🗳️ قائمة التصويتات</h2>
-
+        <a href="../../ProjectManagement/Controllers/ProjectController.php?action=view&id=<?= $project_id ?>
+        " class="back-link">← العودة إلى المشروع
+        </a>
+        <?php if ($user->getRole() === 'Admin'): ?>
         <a href="../Controllers/VoteController.php?action=create&project_id=<?= $project_id ?>">
             ➕ إنشاء تصويت جديد
         </a>
-
+        <?php endif; ?>
         <?php if (!empty($votes)) : ?>
             <table>
                 <thead>
@@ -28,28 +35,32 @@
                         <tr>
                             <td><?= htmlspecialchars($vote['question']) ?></td>
                             <td><?= htmlspecialchars($vote['status']) ?></td>
-                            
+                             <form method="POST" action="../Controllers/VoteController.php?action=vote&vote_id=<?= $vote['vote_id'] ?>&project_id=<?= $vote['project_id'] ?>">
                             <td>
                                 <?php if ($vote['status'] === 'open'): ?>
                                     <!-- نعرض الخيارات المتاحة للتصويت -->
-                                    <form action="../Controllers/VoteController.php?action=vote&
-                                    vote_id=<?= $vote['vote_id'] ?>
-                                    &project_id=<?= $vote['project_id'] ?>"
-                                     method="POST" style="display:inline;">
+                                   
+                                     <!-- لو متمش التصويت -->
+                                     <?php if(empty($vote['selected_option'])): ?>
                                         <label for="selected_option">اختر خيارك:</label>
-                                        <select name="selected_option">
-                                            <?php foreach (["ممتنع","لا","نعم"] as $option): ?>
-                                                <option value="<?= htmlspecialchars($option) ?>"><?= htmlspecialchars($option) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <button type="submit">تصويت</button>
-                                    </form>
+                                        
+                                            <input type="radio" name="selected_option" value="yes"> نعم<br>
+                                            <input type="radio" name="selected_option" value="no"> لا<br>
+                                            <input type="radio" name="selected_option" value="abstain"> ممتنع<br>
+                                            <input type="submit" value="إرسال التصويت">
+                              </form>   
+                                    <?php else: ?>
+
+                                        <span>لقد قمت بالتصويت بالفعل: <?=   htmlspecialchars($vote['selected_option']) ?></span>
+                                    <?php endif; ?>
+                                    
                                 <?php else: ?>
                                     مغلق
                                 <?php endif; ?>
-                                |
+                                
                                 <a href="../Controllers/VoteController.php?action=result&vote_id=<?= $vote['vote_id'] ?>">عرض النتائج</a>
                             </td>
+                            
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

@@ -2,6 +2,7 @@
 require_once __DIR__ . '../../../../../config/config.php';
 
 class VoteResponse {
+    private $response_id; 
     private $vote_id;
     private $user_id;
     private $selected_option;
@@ -18,7 +19,63 @@ class VoteResponse {
         $this->selected_option = $option;
     }
 
-    public function hasUserVoted($voteId, $userId) {
+    public function getVoteId() {
+        return $this->vote_id;
+    }
+    public function getUserId() {
+        return $this->user_id;
+    }
+    public function getSelectedOption() {
+        return $this->selected_option;
+    }
+
+    public function save() {
+        $db = new Connect();
+        $pdo = $db->conn;
+        $stmt = $pdo->prepare("INSERT INTO vote_responses (vote_id, user_id, selected_option) VALUES (?, ?, ?)");
+        $ok = $stmt->execute([
+            $this->vote_id,
+            $this->user_id,
+            $this->selected_option
+        ]);
+        if ($ok) {
+            $this->response_id = $pdo->lastInsertId();
+            
+            return $ok;
+        }
+        if (!$ok) {
+    $errorInfo = $stmt->errorInfo();
+    echo "خطأ في تخزين التصويت: " . $errorInfo[2];
+}
+
+    }
+
+    public static function createVoteResponse($data) {
+        $response = new VoteResponse();
+        $response->setVoteId($data['vote_id']);
+        $response->setUserId($data['user_id']);
+        $response->setSelectedOption($data['selected_option']);
+        
+        
+        return $response->save()? $response : null;
+    }
+
+ 
+
+    public static function getUserVoteForVote($voteId, $userId) {
+    $db = new Connect();
+    $pdo = $db->conn;
+
+    $stmt = $pdo->prepare("SELECT selected_option FROM vote_responses WHERE vote_id = ? AND user_id = ?");
+    $stmt->execute([$voteId, $userId]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    // var_dump($result);
+    // exit;
+    return $result ? $result['selected_option'] : null;
+}
+
+
+    public static function hasUserVoted($voteId, $userId) {
         $db = new Connect();
         $pdo = $db->conn;
 
@@ -27,19 +84,7 @@ class VoteResponse {
         return $stmt->fetch() !== false;
     }
 
-    public function submit() {
-        $db = new Connect();
-        $pdo = $db->conn;
-
-        // Check if already voted
-        // $check = $pdo->prepare("SELECT * FROM vote_responses WHERE vote_id = ? AND user_id = ?");
-        // $check->execute([$this->vote_id, $this->user_id]);
-        // if ($check->fetch()) return false;
-
-        // Submit response
-        $stmt = $pdo->prepare("INSERT INTO vote_responses (vote_id, user_id, selected_option) VALUES (?, ?, ?)");
-        return $stmt->execute([$this->vote_id, $this->user_id, $this->selected_option]);
-    }
+   
 
     public function getResults($voteId) {
         $db = new Connect();

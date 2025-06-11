@@ -4,7 +4,6 @@ class Vote {
     private $vote_id;
     private $project_id;
     private $question;
-    private $options; // JSON string
     private $status;  // 'open' or 'closed'
     private $created_by; // User ID of the creator
 
@@ -25,10 +24,6 @@ class Vote {
         return $this->question;
     }
 
-    public function getOptions() {
-        return json_decode($this->options, true);
-    }
-
     public function getStatus() {
         return $this->status;
     }
@@ -47,10 +42,6 @@ class Vote {
         $this->question = $question;
     }
 
-    public function setOptions($options) {
-        $this->options = json_encode($options);
-    }
-
     public function setStatus($status) {
         $this->status = $status;
     }
@@ -63,10 +54,11 @@ class Vote {
         $db = new Connect();
         $pdo = $db->conn;
 
-        $stmt = $pdo->prepare("INSERT INTO votes (project_id, question, status, created_by) VALUES (?, ?,'open', ?)");
+        $stmt = $pdo->prepare("INSERT INTO votes (project_id, question, status, created_by) VALUES (?, ?, ?, ?)");
         $ok= $stmt->execute([
             $this->project_id,
             $this->question,
+            $this->status,
             $this->created_by
         ]);
         if ($ok) {
@@ -86,7 +78,7 @@ class Vote {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getAllVotesByProject($projectId) {
+    public static function getAllVotesByProject($projectId) {
         $db = new Connect();
         $pdo = $db->conn;
 

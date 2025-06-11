@@ -17,7 +17,9 @@ class User {
 
     public function getUserId()   { return $this->userId; }
     public function setUserId($id) { $this->userId = $id; }
+
     public function getPassword() { return $this->password; }
+    
     public function getName()     { return $this->name; }
     public function setName($n)   { $this->name = $n; }
 
@@ -27,11 +29,11 @@ class User {
     public function getRole()     { return $this->role; }
     public function setRole($r)   { $this->role = $r; }
 
-    public function getLanguage()     { return $this->language; }
-    public function setLanguage($l)   { $this->language = $l; }
-
     public function getMajor()       { return $this->major; }
     public function setMajor($m)     { $this->major = $m; }
+
+    public function getLanguage()     { return $this->language; }
+    public function setLanguage($l)   { $this->language = $l; }
 
     public function getProjectId()   { return $this->projectId; }
     public function setProjectId($p) { $this->projectId = $p; }
@@ -55,13 +57,14 @@ class User {
             // تحديث
             $stmt = $pdo->prepare(
               "UPDATE users
-               SET name = ?, email = ?, password = ?, role = ?, language = ?, project_id = ?
+               SET name = ?, email = ?, password = ?, major = ?, role = ?, language = ?, project_id = ?
                WHERE user_id = ?"
             );
             return $stmt->execute([
                 $this->name,
                 $this->email,
                 $this->password,
+                $this->major,
                 $this->role,
                 $this->language,
                 $this->projectId,
@@ -70,44 +73,30 @@ class User {
         } else {
             // إدخال جديد
             $stmt = $pdo->prepare(
-              "INSERT INTO users (name, email, password, role, language, project_id)
-               VALUES (?, ?, ?, ?, ?, ?)"
+              "INSERT INTO users (name, email, password, major, role, language, project_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?)"
             );
             $ok = $stmt->execute([
                 $this->name,
                 $this->email,
                 $this->password,
+                $this->major,
                 $this->role,
                 $this->language,
                 $this->projectId
             ]);
             if ($ok) {
-                $this->userId = $pdo->lastInsertId();
+                $this->userId =$pdo->lastInsertId();
+                
+
             }
             return $ok;
         }
     } catch (PDOException $e) {
             // في حالة حدوث خطأ في قاعدة البيانات
-            error_log("User save error: " . $e->getMessage());
+            error_log("Database Error in save(): " . $e->getMessage());
             return false;
         }
-    }
-
-    /**
-     * تسجيل الدخول
-     */
-    public static function login(string $email, string $password): ?User {
-    try{
-        $user = self::findByEmail($email);
-        if ($user && password_verify($password, $user->password)) {
-            return $user;
-        }
-    } catch (PDOException $e){
-        error_log("Login error: " . $e->getMessage());
-        
-    }
-        return null;
-    
     }
 
     public static function findByEmail(string $email): ?User {
@@ -146,7 +135,7 @@ class User {
         $u->setUserId($row['user_id']);
         $u->setName($row['name']);
         $u->setEmail($row['email']);
-        $u->setPassword($row['password']); // لا نستخدمه هنا، فقط للتعيين
+        $u->password = $row['password']; //هيا مشفرة مش ضروري نشفرها تاني
         $u->setRole($row['role']);
         $u->setLanguage($row['language']);
         $u->setMajor($row['major']);
@@ -163,6 +152,7 @@ class User {
             'user_id'    => $this->getUserId(),
             'name'       => $this->getName(),
             'email'      => $this->getEmail(),
+            'major'      => $this->getMajor(),
             'role'       => $this->getRole(),
             'language'   => $this->getLanguage(),
             'project_id' => $this->getProjectId()

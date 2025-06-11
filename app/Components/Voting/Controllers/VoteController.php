@@ -3,6 +3,7 @@ require_once __DIR__ . '/../Models/Vote.php';
 require_once __DIR__ . '/../Models/VoteResponse.php';
 require_once __DIR__ . '/../../UserManagement/Models/User.php';
 
+
 class VoteController
 {
     public function __construct()
@@ -14,8 +15,17 @@ class VoteController
     public function listAction()
     {
         $project_id = intval($_GET['project_id'] ?? 0);
-        $voteModel = new Vote();
-        $votes = $voteModel->getAllVotesByProject($project_id);
+        // $vote_id = intval($_GET['vote_id'] ?? 0);
+        $user_id = $_SESSION['user_id'] ?? 0;
+        $user= User::findById($user_id);
+        $votes = Vote::getAllVotesByProject($project_id);
+        if (!empty($votes)) {
+            foreach ($votes as $index => $vote) {
+                $userVote = VoteResponse::getUserVoteForVote($vote['vote_id'], $user_id);
+                $votes[$index]['selected_option'] = $userVote;  // إما null أو القيمة (نعم / لا / ممتنع)
+            }
+        }
+        
         include __DIR__ . '/../Views/voteList.php';
     }
 
@@ -36,44 +46,42 @@ class VoteController
             } else {
                 throw new Exception("فشل في إنشاء التصويت");
             }
-            } catch (Exception $e) {
-                echo " خطأ اتناء انشاء التصويت: " . $e->getMessage();
-            }
-        } else {
-            $project_id = $_GET['project_id'] ?? 0;
-            include __DIR__ . '/../Views/voteForm.php';
+        } catch (Exception $e) {
+            echo " خطأ اتناء انشاء التصويت: " . $e->getMessage();
         }
+    } else {
+        $project_id = $_GET['project_id'] ?? 0;
+        include __DIR__ . '/../Views/voteForm.php';
+      }
     }
-
     public function voteAction()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
-            $response = new VoteResponse();
+                $data = [
+                    'vote_id' => $_GET['vote_id'] ?? 0,
+                    'project_id' => $_GET['project_id'] ?? 0,
+                    'user_id' => $_SESSION['user_id'] ?? 0,
+                    'selected_option' => $_POST['selected_option'] ?? null
+                ];
+                // var_dump($data);
+                // exit;
 
-            $voteId = $_GET['vote_id'];
-            $projectId = $_GET['project_id'] ?? 0;
-            $userId = $_SESSION['user_id']; 
-            $option = $_POST['selected_option'];
-            $response->setVoteId($voteId);
-            $response->setUserId($userId);
-            $response->setSelectedOption($option);
-            
-            if ($response->hasUserVoted($voteId, $userId)) {
-                echo "لقد قمت بالتصويت مسبقًا";
-                exit;
-            } 
-             if ($response->submit()) {
-                header('Location: VoteController.php?action=list&vote_id=' . $voteId . '&project_id=' . $projectId);
-                exit;
-            } else {
-                throw new Exception("فشل في إرسال التصويت");
-            }
+                if (VoteResponse::hasUserVoted($data['vote_id'], $data['user_id'])) {
+                    echo "لقد قمت بالتصويت مسبقًا";
+                    exit;
+                }
+                if (VoteResponse::createVoteResponse($data)) {
+                    header('Location: VoteController.php?action=list&project_id=' . $data['project_id']);
+                    exit;
+                } else {
+                    throw new Exception("فشل في إرسال التصويت");
+                }
 
-        } catch (Exception $e) {
-                echo "خطأ في التصويت: " . $e->getMessage();
+            } catch (Exception $e) {
+                    echo "خطأ في التصويت: " . $e->getMessage();
+                }
             }
-        }
     }
 
     public function resultAction()
