@@ -21,6 +21,7 @@ class ProjectMemberController
      */
     public function listAction()
     {
+        try{
         $project_id = intval($_GET['project_id'] ?? 0);
         if (empty($project_id)) {
             header('Location: ProjectController.php?action=list');
@@ -30,12 +31,17 @@ class ProjectMemberController
         $members = ProjectMember::findByProjectId($project_id);
         include __DIR__ . '/../Views/viewMembers.php';
 
+      }catch(Exception $e){
+        // التعامل مع الأخطاء
+        echo "حدث خطأ: " . $e->getMessage();
+      }
     }
 
     /**
      * إضافة عضو جديد إلى المشروع
      */
     public function addAction(){
+        try{
     // فقط الطلاب الذين ليس لهم مشروع مرتبط
     $students = StudentUser::findAllStudents();
     $project_id = intval($_GET['project_id'] ?? 0);
@@ -46,6 +52,10 @@ class ProjectMemberController
     }
 
     include __DIR__ . '/../Views/addMemberForm.php';
+        } catch (Exception $e) {
+            // التعامل مع الأخطاء
+            echo "حدث خطأ: " . $e->getMessage();
+        }
 }
     
     

@@ -46,7 +46,6 @@ class ProjectMember
     }
 
     // استرجاع كل الأعضاء لمشروع معيّن.
-    // الاسترجاع يكون من كلاس الطالب .
         
     public static function findByProjectId(int $project_id): array
     {

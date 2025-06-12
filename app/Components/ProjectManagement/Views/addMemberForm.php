@@ -6,7 +6,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../../../../public/css/addMemberForm.css">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
+  
+</head>
+<body>
+  <div class="form-container">
+    <h2>إضافة عضو جديد إلى المشروع</h2>
+    <form method="post" action="../Controllers/ProjectMemberController.php?action=save&project_id=<?= $project_id ?>">
+  <div class="form-group">
+    <label for="user_id">اختر طالب:</label>
+    <select name="user_id" id="user_id" required>
+        <?php foreach ($students as $s): ?>
+          <option value="<?= $s->getUserId() ?>">
+            <?= htmlspecialchars($s->getName()) ?> - <?= htmlspecialchars($s->getMajor()) ?>
+          </option>
+        <?php endforeach; ?>
+    </select>
+  </div>
+  
+
+  <div class="form-actions">
+    <button type="submit" class="btn-submit">
+      حفظ العضو
+    </button>
+  </div>
+</form>
+
+  </div>
+</body>
+</html>
+<style>
     /* File: /app/Components/ProjectManagement/Assets/css/addMemberForm.css */
 
 /* المتغيرات العامة */
@@ -146,30 +174,3 @@
     animation: fadeIn 0.5s ease-out;
   }
   </style>
-</head>
-<body>
-  <div class="form-container">
-    <h2>إضافة عضو جديد إلى المشروع</h2>
-    <form method="post" action="../Controllers/ProjectMemberController.php?action=save&project_id=<?= $project_id ?>">
-  <div class="form-group">
-    <label for="user_id">اختر طالب:</label>
-    <select name="user_id" id="user_id" required>
-        <?php foreach ($students as $s): ?>
-          <option value="<?= $s->getUserId() ?>">
-            <?= htmlspecialchars($s->getName()) ?> - <?= htmlspecialchars($s->getMajor()) ?>
-          </option>
-        <?php endforeach; ?>
-    </select>
-  </div>
-  
-
-  <div class="form-actions">
-    <button type="submit" class="btn-submit">
-      حفظ العضو
-    </button>
-  </div>
-</form>
-
-  </div>
-</body>
-</html>
