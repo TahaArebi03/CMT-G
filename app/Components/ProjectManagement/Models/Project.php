@@ -1,5 +1,4 @@
 <?php
-// File: /app/Components/ProjectManagement/Models/Project.php
 
 require_once __DIR__ . '/../../../../config/config.php';
 
@@ -13,9 +12,9 @@ class Project
     private $status;      // 'active' أو 'archived'
 
     public function __construct() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        // if (session_status() === PHP_SESSION_NONE) {
+        //     session_start();
+        // }
 
     }
 
@@ -106,33 +105,18 @@ class Project
     /**
      * حدّث بيانات المشروع الحالي.
      */
-    public function updateProject(): bool
-    {
-        return $this->save();
-    }
+    // public function updateProject(): bool
+    // {
+    //     return $this->save();
+    // }
 
     /**
      * أشرِف المشروع (archive).
      */
-    public function archiveProject(): bool
-    {
-        $this->setStatus('archived');
-        return $this->save();
-    }
-
-    /**
-     * ارجع تفاصيل المشروع كمصفوفة.
-     */
-    // public function getDetails(): array
+    // public function archiveProject(): bool
     // {
-    //     return [
-    //         'project_id'  => $this->project_id,
-    //         'title'       => $this->title,
-    //         'description' => $this->description,
-    //         'objectives'  => $this->objectives,
-    //         'deadline'    => $this->deadline,
-    //         'status'      => $this->status
-    //     ];
+    //     $this->setStatus('archived');
+    //     return $this->save();
     // }
 
     /**
