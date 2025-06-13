@@ -22,9 +22,9 @@ class ProjectTest extends TestCase
 
     public function testFindProjectById()
     {
-        $project = Project::findById(50); // Assuming project with ID 1 exists
+        $project = Project::findById(73); // Assuming project with ID 73 exists
         $this->assertInstanceOf(Project::class, $project);
-        $this->assertEquals(50, $project->getId());
+        $this->assertEquals(73, $project->getId());
         $this->assertNotEmpty($project->getTitle());
     }
 }

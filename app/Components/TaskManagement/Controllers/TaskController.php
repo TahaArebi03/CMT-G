@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../../../config/config.php';
 require_once __DIR__ . '/../Models/Task.php';
 require_once __DIR__ . '/../../UserManagement/Models/StudentUser.php';
+require_once __DIR__ . '/../../ProjectManagement/Models/ProjectMember.php';
 
 class TaskController
 {
@@ -77,7 +78,7 @@ class TaskController
             exit;
         } else {
             // جلب قائمة الطلاب للاختيار من الفورم
-            $students  = StudentUser::findByProject($project_id);
+            $students  = ProjectMember::findByProjectId($project_id);
             include __DIR__ . '/../Views/taskForm.php';
         }
     }

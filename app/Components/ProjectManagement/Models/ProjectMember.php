@@ -61,6 +61,7 @@ class ProjectMember
         foreach ($rows as $row) {
             $s=new User();
             $s->setName($row['name']);
+            $s->setUserId($row['user_id']);
             $s->setRole($row['role']);
             $s->setMajor($row['major']);
             $s->setProjectId($row['project_id']);
