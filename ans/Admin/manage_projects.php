@@ -1,128 +1,102 @@
+<!-- ربط ملف التنسيق الخاص بالصفحة -->
 <link rel="stylesheet" href="manage_projects.css">
 
 <?php
-// 🔧 ملف: Admin/manage_projects.php
-// إدارة وإنشاء وتعديل المشاريع
+// 🌐 بدء الجلسة لحفظ معلومات المستخدم
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'مسؤول' && $_SESSION['role'] !== 'قائد فريق') {
+require_once '../Config/connect.php'; // 📦 استدعاء ملف الاتصال بقاعدة البيانات
+
+// ✅ (Refactoring 2) دالة تتحقق من أن المستخدم مسؤول أو قائد فريق
+function isAuthorizedAdmin() {
+    return isset($_SESSION['user_id']) &&
+           ($_SESSION['role'] === 'مسؤول' || $_SESSION['role'] === 'قائد فريق');
+}
+
+// 🚫 إعادة توجيه المستخدم إذا لم يكن مخولًا
+if (!isAuthorizedAdmin()) {
     header("Location: ../Auth/inout.php");
     exit;
 }
 
-require_once '../Config/connect.php';
-
-// Define the ProjectManager class
-class ProjectManager {
-    private $conn;
-
-    public function __construct($db) {
-        $this->conn = $db->conn;
-    }
-
-    // حذف مشروع
-    public function deleteProject($projectId) {
-        try {
-            $stmt = $this->conn->prepare("DELETE FROM projects WHERE project_id = ?");
-            $stmt->execute([$projectId]);
-            return true;
-        } catch (PDOException $e) {
-            return "خطأ في حذف المشروع: " . $e->getMessage();
-        }
-    }
-
-    // تعديل مشروع
-    public function updateProject($updateData) {
-        try {
-            $stmt = $this->conn->prepare("UPDATE projects SET title=?, description=?, objectives=?, deadline=?, status=? WHERE project_id=?");
-            $stmt->execute([
-                $updateData['title'], $updateData['description'], $updateData['objectives'], $updateData['deadline'], $updateData['status'], $updateData['update_id']
-            ]);
-            return true;
-        } catch (PDOException $e) {
-            return "خطأ في تعديل المشروع: " . $e->getMessage();
-        }
-    }
-
-    // إضافة مشروع جديد
-    public function addProject($newProjectData) {
-        try {
-            $stmt = $this->conn->prepare("INSERT INTO projects (title, description, objectives, deadline, status, created_by) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([
-                $newProjectData['new_title'], $newProjectData['new_description'], $newProjectData['new_objectives'], $newProjectData['new_deadline'], $newProjectData['new_status'], $newProjectData['created_by']
-            ]);
-            return true;
-        } catch (PDOException $e) {
-            return "خطأ في إضافة المشروع: " . $e->getMessage();
-        }
-    }
-
-    // جلب المشاريع
-    public function getProjects() {
-        try {
-            $stmt = $this->conn->prepare("SELECT * FROM projects");
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return "خطأ في جلب المشاريع: " . $e->getMessage();
-        }
-    }
-}
-
+// ⚙️ إنشاء الاتصال بقاعدة البيانات
 $connection = new Connect();
-$projectManager = new ProjectManager($connection);
+$conn = $connection->conn;
 
-// حذف مشروع
+/////////////////////////////////////////////////////////
+// ✅ (Refactoring 1) فصل عمليات CRUD في دوال مستقلة //
+/////////////////////////////////////////////////////////
+
+// 🗑️ دالة لحذف مشروع
+function deleteProject($conn, $projectId) {
+    $stmt = $conn->prepare("DELETE FROM projects WHERE project_id = ?");
+    $stmt->execute([$projectId]);
+}
+
+// 📝 دالة لتحديث مشروع
+function updateProject($conn, $data) {
+    $stmt = $conn->prepare("UPDATE projects SET title=?, description=?, objectives=?, deadline=?, status=? WHERE project_id=?");
+    $stmt->execute([
+        $data['title'], $data['description'], $data['objectives'],
+        $data['deadline'], $data['status'], $data['update_id']
+    ]);
+}
+
+// ➕ دالة لإضافة مشروع جديد
+function createProject($conn, $data, $creatorId) {
+    $stmt = $conn->prepare("INSERT INTO projects (title, description, objectives, deadline, status, created_by) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([
+        $data['new_title'], $data['new_description'], $data['new_objectives'],
+        $data['new_deadline'], $data['new_status'], $creatorId
+    ]);
+}
+
+// 📦 تنفيذ حذف المشروع إذا تم الضغط على رابط الحذف
 if (isset($_GET['delete'])) {
-    $message = $projectManager->deleteProject($_GET['delete']);
-    if ($message === true) {
+    try {
+        deleteProject($conn, $_GET['delete']);
         header("Location: manage_projects.php");
         exit;
-    } else {
-        echo $message;
+    } catch (PDOException $e) {
+        echo "خطأ في حذف المشروع: " . $e->getMessage();
     }
 }
 
-// تعديل مشروع
+// 🔄 تنفيذ تعديل المشروع إذا تم إرسال النموذج الخاص بالتعديل
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_id'])) {
-    $message = $projectManager->updateProject([
-        'title' => $_POST['title'],
-        'description' => $_POST['description'],
-        'objectives' => $_POST['objectives'],
-        'deadline' => $_POST['deadline'],
-        'status' => $_POST['status'],
-        'update_id' => $_POST['update_id']
-    ]);
-    if ($message === true) {
+    try {
+        updateProject($conn, $_POST);
         header("Location: manage_projects.php");
         exit;
-    } else {
-        echo $message;
+    } catch (PDOException $e) {
+        echo "خطأ في تعديل المشروع: " . $e->getMessage();
     }
 }
 
-// إضافة مشروع جديد
+// 🆕 تنفيذ إضافة مشروع جديد إذا تم إرسال النموذج الخاص بالإضافة
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_new'])) {
-    $message = $projectManager->addProject([
-        'new_title' => $_POST['new_title'],
-        'new_description' => $_POST['new_description'],
-        'new_objectives' => $_POST['new_objectives'],
-        'new_deadline' => $_POST['new_deadline'],
-        'new_status' => $_POST['new_status'],
-        'created_by' => $_SESSION['user_id']
-    ]);
-    if ($message === true) {
+    try {
+        createProject($conn, $_POST, $_SESSION['user_id']);
         header("Location: manage_projects.php");
         exit;
-    } else {
-        echo $message;
+    } catch (PDOException $e) {
+        echo "خطأ في إضافة المشروع: " . $e->getMessage();
     }
 }
 
-$projects = $projectManager->getProjects();
+// 📥 جلب كل المشاريع من قاعدة البيانات لعرضها
+try {
+    $stmt = $conn->prepare("SELECT * FROM projects");
+    $stmt->execute();
+    $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "خطأ في جلب المشاريع: " . $e->getMessage();
+}
 ?>
 
+<!-- 🧾 عنوان الصفحة -->
 <h2>إدارة المشاريع</h2>
 
+<!-- 🔗 قائمة التنقل بين صفحات الإدارة -->
 <ul>
     <li><a href="manage_projects.php">إدارة المشاريع</a></li>
     <li><a href="manage_tasks.php">إدارة المهام</a></li>
@@ -132,29 +106,36 @@ $projects = $projectManager->getProjects();
     <li><a href="../Auth/out.php" onclick="return confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟');">🔓 تسجيل الخروج</a></li>
 </ul>
 
+<!-- 🆕 نموذج إضافة مشروع جديد -->
 <form method="post">
     <h3>➕ إضافة مشروع جديد</h3>
     <input type="hidden" name="create_new" value="1">
+
     <label>الاسم: <input type="text" name="new_title" required></label>
     <label>الوصف: <input type="text" name="new_description"></label>
     <label>الأهداف: <input type="text" name="new_objectives"></label>
     <label>الموعد النهائي: <input type="date" name="new_deadline"></label>
+
     <label>الحالة:
         <select name="new_status">
             <option value="نشط">نشط</option>
             <option value="مؤرشف">مؤرشف</option>
         </select>
     </label>
+
     <button type="submit">➕ إنشاء</button>
 </form>
 
+<!-- 📊 جدول عرض المشاريع الموجودة -->
 <table border="1">
     <tr>
         <th>الاسم</th><th>الوصف</th><th>الأهداف</th><th>الموعد النهائي</th><th>الحالة</th><th>إجراءات</th>
     </tr>
+
     <?php if (!empty($projects)): ?>
         <?php foreach ($projects as $proj): ?>
         <tr>
+            <!-- 📝 نموذج تعديل مشروع -->
             <form method="post">
                 <td><input type="text" name="title" value="<?= htmlspecialchars($proj['title']) ?>"></td>
                 <td><input type="text" name="description" value="<?= htmlspecialchars($proj['description']) ?>"></td>
@@ -167,13 +148,12 @@ $projects = $projectManager->getProjects();
                     </select>
                 </td>
                 <td>
+                    <!-- 🔄 زر تعديل / 🗑️ رابط حذف -->
                     <input type="hidden" name="update_id" value="<?= $proj['project_id'] ?>">
                     <button type="submit">💾 تحديث</button>
+                    <a href="?delete=<?= $proj['project_id'] ?>" onclick="return confirm('هل تريد حذف المشروع؟')">🗑️ حذف</a>
                 </td>
             </form>
-            <td>
-                <a href="?delete=<?= $proj['project_id'] ?>" onclick="return confirm('⚠️ لا يمكن التراجع. هل أنت متأكد من الحذف؟')">🗑 حذف</a>
-            </td>
         </tr>
         <?php endforeach; ?>
     <?php else: ?>
