@@ -71,6 +71,7 @@ class Comment{
 }
     // جلب جميع التعليقات في المهمة
     public static function getCommentsByTaskId($task_id){
+        try{
         $db = new Connect();
         $pdo = $db->conn;
         $stmt= $pdo->prepare("SELECT * FROM comments WHERE task_id=?");
@@ -86,15 +87,18 @@ class Comment{
             $comments[] = $comment;
         }
         return $comments;
+    }catch(Exception $e){
+        error_log("Error fetching comments: " . $e->getMessage());
+        return [];
+      }
     }
-
 
     // حذف تعليق
-    public function delete($comment_id){
-        $db = new Connect();
-        $pdo = $db->conn;
-        $stmt= $pdo->prepare("DELETE FROM comments WHERE comment_id=?");
-        return $stmt->execute([$comment_id]);
+    // public function delete($comment_id){
+    //     $db = new Connect();
+    //     $pdo = $db->conn;
+    //     $stmt= $pdo->prepare("DELETE FROM comments WHERE comment_id=?");
+    //     return $stmt->execute([$comment_id]);
 
-    }
+    // }
 }
