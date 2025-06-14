@@ -15,14 +15,13 @@ class VoteController
     public function listAction()
     {
         $project_id = intval($_GET['project_id'] ?? 0);
-        // $vote_id = intval($_GET['vote_id'] ?? 0);
         $user_id = $_SESSION['user_id'] ?? 0;
         $user= User::findById($user_id);
         $votes = Vote::getAllVotesByProject($project_id);
         if (!empty($votes)) {
             foreach ($votes as $index => $vote) {
-                $userVote = VoteResponse::getUserVoteForVote($vote['vote_id'], $user_id);
-                $votes[$index]['selected_option'] = $userVote;  // إما null أو القيمة (نعم / لا / ممتنع)
+                $userVote = VoteResponse::getUserVoteResponse($vote['vote_id'], $user_id);
+                $votes[$index]['selected_option'] = $userVote;  
             }
         }
         
@@ -84,18 +83,18 @@ class VoteController
             }
     }
 
-    public function resultAction()
-    {
-        $vote_id = $_GET['vote_id'] ?? 0;
+    // public function resultAction()
+    // {
+    //     $vote_id = $_GET['vote_id'] ?? 0;
 
-        $vote = new Vote();
-        $voteData = $vote->getVoteById($vote_id);
+    //     $vote = new Vote();
+    //     $voteData = $vote->getVoteById($vote_id);
 
-        $response = new VoteResponse();
-        $results = $response->getResultsByVoteId($vote_id);
+    //     $response = new VoteResponse();
+    //     $results = $response->getResultsByVoteId($vote_id);
 
-        include __DIR__ . '/../Views/voteResult.php';
-    }
+    //     include __DIR__ . '/../Views/voteResult.php';
+    // }
 }
 
 $controller = new VoteController();
@@ -108,8 +107,8 @@ switch ($action) {
     case 'vote':
         $controller->voteAction();
         break;
-    case 'result':
-        $controller->resultAction();
+    // case 'result':
+    //     $controller->resultAction();
         break;
     case 'list':
     default:
