@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../../config/config.php';
+require_once __DIR__ . '/TaskStatus.php';
 class Task
 {
     private $task_id;
@@ -163,25 +164,22 @@ class Task
     }
     public function start()
 {
-    $this->status = 'in_progress';
-    // تحديث في قاعدة البيانات
-    $db = new Connect();
-    $pdo = $db->conn;
-    $stmt = $pdo->prepare("UPDATE tasks SET status = 'in_progress' WHERE task_id = ?");
-    $stmt->execute([$this->task_id]);
+   
+        try{
+            TaskStatusUpdater::updateStatus($this, 'in_progress');
+        } catch (PDOException $e) {
+            // التعامل مع الأخطاء
+            error_log("Error starting task: " . $e->getMessage());
+    }
 }
 
 public function complete()
 {
-    try{
-    $this->status = 'completed';
-    $db = new Connect();
-    $pdo = $db->conn;
-    $stmt = $pdo->prepare("UPDATE tasks SET status = 'completed' WHERE task_id = ?");
-    $stmt->execute([$this->task_id]);
-    } catch (PDOException $e) {
-        // التعامل مع الأخطاء
-        error_log("Error completing task: " . $e->getMessage());
+        try{
+            TaskStatusUpdater::updateStatus($this, 'completed');
+        } catch (PDOException $e) {
+            // التعامل مع الأخطاء
+            error_log("Error completing task: " . $e->getMessage());
     }
 }
 
