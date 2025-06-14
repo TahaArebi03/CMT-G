@@ -1,5 +1,5 @@
 <?php
-include __DIR__ . '../../../../../config/config.php';
+include_once __DIR__ . '../../../../../config/config.php';
 class Vote {
     private $vote_id;
     private $project_id;
