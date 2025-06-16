@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '../../../../../config/config.php';
-
+require_once __DIR__ . '/VoteOptions.php';
 class VoteResponse {
     private $response_id; 
     private $vote_id;
@@ -54,7 +54,11 @@ class VoteResponse {
         $response = new VoteResponse();
         $response->setVoteId($data['vote_id']);
         $response->setUserId($data['user_id']);
-        $response->setSelectedOption($data['selected_option']);
+        if(VoteOption::isValid($data['selected_option'])) {
+            $response->setSelectedOption($data['selected_option']);
+        }else {
+            throw new Exception("Invalid vote option selected.");
+        }
         
         
         return $response->save()? $response : null;
