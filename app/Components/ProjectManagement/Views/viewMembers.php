@@ -48,7 +48,7 @@ require_once __DIR__ . '/../Models/ProjectMember.php';
   </tbody>
 </table>
 <?php if ($user->getRole() === 'Admin'): ?>
-<a href="../Controllers/ProjectMemberController.php?action=add&project_id=<?= $project_id ?>" class="btn">+ إضافة عضو</a>
+<a href="../Controllers/ProjectMemberController.php?action=add&project_id=<?= $project_id ?>">+ إضافة عضو</a>
 <?php endif; ?>
 
 </body>

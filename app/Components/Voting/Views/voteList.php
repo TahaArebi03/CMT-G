@@ -31,40 +31,34 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($votes as $vote): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($vote['question']) ?></td>
-                            <td><?= htmlspecialchars($vote['status']) ?></td>
-                             <form method="POST" action="../Controllers/VoteController.php?action=vote&vote_id=<?= $vote['vote_id'] ?>&project_id=<?= $vote['project_id'] ?>">
-                            <td>
-                                <?php if ($vote['status'] === 'open'): ?>
-                                    <!-- نعرض الخيارات المتاحة للتصويت -->
-                                   
-                                     <!-- لو متمش التصويت -->
-                                     <?php if(empty($vote['selected_option'])): ?>
-                                        <label for="selected_option">اختر خيارك:</label>
-                                        
-                                            <input type="radio" name="selected_option" value="yes"> نعم<br>
-                                            <input type="radio" name="selected_option" value="no"> لا<br>
-                                            <input type="radio" name="selected_option" value="abstain"> ممتنع<br>
-                                            <input type="submit" value="إرسال التصويت">
-                              </form>   
-                                    <?php else: ?>
+    <?php foreach ($votes as $vote): ?>
+        <tr>
+            <td><?= htmlspecialchars($vote['question']) ?></td>
+            <td><?= htmlspecialchars($vote['status']) ?></td>
+            <td>
+                <?php if ($vote['status'] === 'open'): ?>
+                    <?php if(empty($vote['selected_option'])): ?>
+                        <!-- نموذج التصويت -->
+                        <form method="POST" action="../Controllers/VoteController.php?action=vote&vote_id=<?= $vote['vote_id'] ?>&project_id=<?= $vote['project_id'] ?>">
+                            <label>اختر خيارك:</label><br>
+                            <input type="radio" name="selected_option" value="yes" required> نعم<br>
+                            <input type="radio" name="selected_option" value="no"> لا<br>
+                            <input type="radio" name="selected_option" value="abstain"> ممتنع<br>
+                            <input type="submit" value="إرسال التصويت">
+                        </form>
+                    <?php else: ?>
+                        <span>لقد قمت بالتصويت بالفعل: <?= htmlspecialchars($vote['selected_option']) ?></span>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <span>مغلق</span>
+                <?php endif; ?>
+                <br>
+                <a href="../Controllers/VoteController.php?action=result&vote_id=<?= $vote['vote_id'] ?>">عرض النتائج</a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</tbody>
 
-                                        <span>لقد قمت بالتصويت بالفعل: <?=   htmlspecialchars($vote['selected_option']) ?></span>
-                                    <?php endif; ?>
-                                    
-                                <?php else: ?>
-                                    مغلق
-                                <?php endif; ?>
-                                
-                                <a href="../Controllers/VoteController.php?action=result&vote_id=<?= $vote['vote_id'] ?>">عرض النتائج</a>
-                            </td>
-                            
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
         <?php else: ?>
             <p>لا توجد تصويتات لهذا المشروع.</p>
         <?php endif; ?>

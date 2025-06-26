@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../../config/config.php';
+require_once __DIR__ . '/TaskStatus.php';
 class Task
 {
     private $task_id;
@@ -32,6 +33,7 @@ class Task
      */
     public function save(): bool
     {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
 
@@ -72,6 +74,11 @@ class Task
             }
             return $ok;
         }
+        } catch (PDOException $e) {
+            // التعامل مع الأخطاء
+            error_log("Error saving task: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -80,6 +87,7 @@ class Task
      */
     public static function findByProjectId(int $project_id): array
     {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare(
@@ -102,6 +110,11 @@ class Task
             $tasks[] = $t;
         }
         return $tasks;
+        } catch (PDOException $e) {
+            // التعامل مع الأخطاء
+            error_log("Error fetching tasks: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -109,6 +122,7 @@ class Task
      */
     public static function findById(int $taskId): ?Task
     {
+        try{
         $db  = new Connect();
         $pdo = $db->conn;
         $stmt = $pdo->prepare("SELECT * FROM tasks WHERE task_id = ?");
@@ -126,34 +140,47 @@ class Task
         $t->priority    = $row['priority'];
         $t->deadline    = $row['deadline'];
         return $t;
+        } catch (PDOException $e) {
+            // التعامل مع الأخطاء
+            error_log("Error fetching task by ID: " . $e->getMessage());
+            return null;
+        }
     }
 
     // تحديد اولويات المهام
     public static function orderByPriority(array $tasks): array
     {
+        try{
         usort($tasks, function ($a, $b) {
             $order_priority = ['high' => 1, 'medium' => 2, 'low' => 3];
             return $order_priority[$a->getPriority()] <=> $order_priority[$b->getPriority()];
         });
         return $tasks;
+        } catch (Exception $e) {
+            // التعامل مع الأخطاء
+            error_log("Error ordering tasks by priority: " . $e->getMessage());
+            return $tasks; // إرجاع المهام كما هي في حالة حدوث خطأ
+        }
     }
     public function start()
 {
-    $this->status = 'in_progress';
-    // تحديث في قاعدة البيانات
-    $db = new Connect();
-    $pdo = $db->conn;
-    $stmt = $pdo->prepare("UPDATE tasks SET status = 'in_progress' WHERE task_id = ?");
-    $stmt->execute([$this->task_id]);
+   
+        try{
+            TaskStatusUpdater::updateStatus($this, 'in_progress');
+        } catch (PDOException $e) {
+            // التعامل مع الأخطاء
+            error_log("Error starting task: " . $e->getMessage());
+    }
 }
 
 public function complete()
 {
-    $this->status = 'completed';
-    $db = new Connect();
-    $pdo = $db->conn;
-    $stmt = $pdo->prepare("UPDATE tasks SET status = 'completed' WHERE task_id = ?");
-    $stmt->execute([$this->task_id]);
+        try{
+            TaskStatusUpdater::updateStatus($this, 'completed');
+        } catch (PDOException $e) {
+            // التعامل مع الأخطاء
+            error_log("Error completing task: " . $e->getMessage());
+    }
 }
 
 

@@ -10,4 +10,13 @@
             <directory>./tests/Integration</directory>
         </testsuite> -->
     </testsuites>
+    <coverage processUncoveredFiles="true">
+    <include>
+        <directory>app/</directory>
+    </include>
+    <report>
+        <html outputDirectory="coverage" />
+    </report>
+    </coverage>
+
 </phpunit>
