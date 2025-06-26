@@ -57,7 +57,7 @@ require_once __DIR__ . '/../../UserManagement/Models/User.php';
                         </td>
                         <td data-label="المهلة"><?= htmlspecialchars($t->getDeadline()) ?></td>
                         <td data-label="إجراءات">
-                          <?php if ($user->getRole() === 'Student'): ?>
+                          <?php if ($t->getAssignedTo()==$user_id): ?>
                             <a href="../Controllers/TaskController.php?action=submit&task_id=<?= $t->getTaskId() ?>&project_id=<?= $project_id ?>" class="action-link">بدء</a>
                           <?php endif; ?>
                             <a href="../Controllers/CommentController.php?action=list&task_id=<?=$t->getTaskId()?>

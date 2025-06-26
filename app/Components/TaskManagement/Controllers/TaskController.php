@@ -35,11 +35,15 @@ class TaskController
             // إذا كان المستخدم طالب، نعرض له المهام المخصصة له فقط
             $all_tasks=Task::findByProjectId($project_id);
             $tasks=[];
+            
             foreach($all_tasks as $task){
-                if($task->getAssignedTo() === $user_id){
+                
+                if($task->getAssignedTo() == $user_id){
                     $tasks[] = $task;
+
                 }
             }
+            
         }
         
         

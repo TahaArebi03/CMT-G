@@ -20,8 +20,8 @@ class VoteTest extends TestCase
   public function testGetVoteById()
  {
     $vote = new Vote();
-    $vote->setVoteId(90);
-    $result = $vote->getVoteById(90);
+    $vote->setVoteId(103);
+    $result = $vote->getVoteById(103);
     $this->assertNotEmpty($result, "Failed to retrieve vote by ID");
  }
 
